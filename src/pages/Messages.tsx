@@ -3,6 +3,8 @@ import { ArrowLeft, Send, Paperclip, Smile, Phone, Video, MoreVertical } from "l
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 
+const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
+
 const Messages = () => {
   const [selectedChat, setSelectedChat] = useState(1);
   const [newMessage, setNewMessage] = useState("");
@@ -11,7 +13,7 @@ const Messages = () => {
     {
       id: 1,
       name: "Sarah Chen",
-      avatar: "",
+      avatar: avatarFor("Sarah Chen"),
       lastMessage: "Thanks for sharing that article!",
       time: "2m",
       unread: true,
@@ -20,7 +22,7 @@ const Messages = () => {
     {
       id: 2,
       name: "Alex Morgan",
-      avatar: "",
+      avatar: avatarFor("Alex Morgan"),
       lastMessage: "Let's catch up soon",
       time: "1h",
       unread: false,
@@ -29,7 +31,7 @@ const Messages = () => {
     {
       id: 3,
       name: "Jordan Kim",
-      avatar: "",
+      avatar: avatarFor("Jordan Kim"),
       lastMessage: "Great presentation today",
       time: "3h",
       unread: false,
@@ -38,7 +40,7 @@ const Messages = () => {
     {
       id: 4,
       name: "Emma Wilson",
-      avatar: "",
+      avatar: avatarFor("Emma Wilson"),
       lastMessage: "See you at the meeting",
       time: "1d",
       unread: true,
@@ -47,7 +49,7 @@ const Messages = () => {
     {
       id: 5,
       name: "Marcus Johnson",
-      avatar: "",
+      avatar: avatarFor("Marcus Johnson"),
       lastMessage: "The project looks amazing",
       time: "2d",
       unread: false,
@@ -56,7 +58,7 @@ const Messages = () => {
     {
       id: 6,
       name: "Lisa Zhang",
-      avatar: "",
+      avatar: avatarFor("Lisa Zhang"),
       lastMessage: "Can we schedule a call?",
       time: "3d",
       unread: false,
@@ -64,7 +66,7 @@ const Messages = () => {
     }
   ];
 
-  const messages = {
+  const messages: Record<number, { id: number; text: string; sender: "me" | "other"; time: string }[]> = {
     1: [
       { id: 1, text: "Hey! How are you doing?", sender: "other", time: "10:30 AM" },
       { id: 2, text: "I'm doing great! Just finished reading that article you sent.", sender: "me", time: "10:32 AM" },
@@ -114,7 +116,7 @@ const Messages = () => {
             >
               <div className="flex items-start gap-3">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-muted"></div>
+                  <img src={conversation.avatar} alt={conversation.name} className="w-12 h-12 rounded-full object-cover" />
                   {conversation.online && (
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                   )}
@@ -148,7 +150,7 @@ const Messages = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-muted"></div>
+                    <img src={currentChat.avatar} alt={currentChat.name} className="w-10 h-10 rounded-full object-cover" />
                     {currentChat.online && (
                       <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-white rounded-full"></div>
                     )}
