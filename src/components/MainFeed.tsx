@@ -2,16 +2,66 @@ import { Heart, MessageCircle, Send } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const MainFeed = () => {
-  const stories = Array.from({ length: 7 }, (_, i) => ({
-    id: i,
-    username: "username"
-  }));
+  const stories = [
+    { id: 1, username: "sarah_chen", active: true },
+    { id: 2, username: "alex_m", active: false },
+    { id: 3, username: "jordan.k", active: true },
+    { id: 4, username: "emma_w", active: false },
+    { id: 5, username: "marcus.j", active: true },
+    { id: 6, username: "lisa_z", active: false },
+    { id: 7, username: "david.r", active: true }
+  ];
 
-  const posts = Array.from({ length: 4 }, (_, i) => ({
-    id: i,
-    username: "username",
-    content: "Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours."
-  }));
+  const posts = [
+    {
+      id: 1,
+      username: "sarah_chen",
+      content: "Just finished reading about mindful technology and how it can help us stay present in our digital lives. The concept of finite feeds is fascinating!",
+      likes: 23,
+      comments: 5,
+      time: "2h"
+    },
+    {
+      id: 2,
+      username: "alex_m",
+      content: "Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.",
+      likes: 45,
+      comments: 12,
+      time: "4h"
+    },
+    {
+      id: 3,
+      username: "jordan.k",
+      content: "Loving the minimalist approach to social media. Sometimes less really is more when it comes to staying focused and productive.",
+      likes: 18,
+      comments: 3,
+      time: "6h"
+    },
+    {
+      id: 4,
+      username: "emma_w",
+      content: "The power of intentional design in creating healthy digital habits. Every feature should serve a purpose and respect the user's time.",
+      likes: 31,
+      comments: 8,
+      time: "8h"
+    },
+    {
+      id: 5,
+      username: "marcus.j",
+      content: "Building technology that enhances rather than detracts from our real-world connections. That's the future I want to be part of.",
+      likes: 67,
+      comments: 15,
+      time: "12h"
+    },
+    {
+      id: 6,
+      username: "lisa_z",
+      content: "Simple reminder: your attention is your most valuable asset. Choose where to invest it wisely.",
+      likes: 89,
+      comments: 22,
+      time: "1d"
+    }
+  ];
 
   return (
     <ScrollArea className="flex-1 h-screen main-feed-scroll">
@@ -20,8 +70,12 @@ const MainFeed = () => {
         <div className="mb-8">
           <div className="flex gap-4 items-center">
             {stories.map((story) => (
-              <div key={story.id} className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-muted mb-2"></div>
+              <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
+                <div className={`w-16 h-16 rounded-full bg-muted mb-2 relative ${story.active ? 'ring-2 ring-accent ring-offset-2' : ''}`}>
+                  {story.active && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full"></div>
+                  )}
+                </div>
                 <span className="text-sm text-muted-foreground">{story.username}</span>
               </div>
             ))}
@@ -37,7 +91,10 @@ const MainFeed = () => {
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-muted"></div>
-                  <span className="text-sm font-medium text-foreground">{post.username}</span>
+                  <div>
+                    <span className="text-sm font-medium text-foreground">{post.username}</span>
+                    <div className="text-xs text-muted-foreground">{post.time}</div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button className="p-1 hover:bg-hover-bg rounded transition-colors">
@@ -55,8 +112,12 @@ const MainFeed = () => {
               {/* Post Content */}
               <div className="h-48 bg-post-bg"></div>
 
-              {/* Post Description */}
+              {/* Post Description & Stats */}
               <div className="p-4">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                  <span>{post.likes} likes</span>
+                  <span>{post.comments} comments</span>
+                </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {post.content}
                 </p>

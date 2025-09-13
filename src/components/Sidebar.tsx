@@ -1,12 +1,15 @@
 import { Home, MessageCircle, Bell, BookOpen, Settings, User } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Link, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
+  const location = useLocation();
+  
   const navigationItems = [
-    { icon: Home, label: "Home", isActive: true },
-    { icon: MessageCircle, label: "Messages" },
-    { icon: Bell, label: "Notifications" },
-    { icon: BookOpen, label: "Capsules" },
+    { icon: Home, label: "Home", path: "/" },
+    { icon: MessageCircle, label: "Messages", path: "/messages" },
+    { icon: Bell, label: "Notifications", path: "/notifications" },
+    { icon: BookOpen, label: "Capsules", path: "/capsules" },
   ];
 
   const contentFilters = [
@@ -27,17 +30,18 @@ const Sidebar = () => {
       {/* Navigation */}
       <nav className="space-y-2 mb-8">
         {navigationItems.map((item) => (
-          <button
+          <Link
             key={item.label}
+            to={item.path}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-              item.isActive 
+              location.pathname === item.path
                 ? "text-accent font-medium" 
                 : "text-foreground hover:bg-hover-bg"
             }`}
           >
             <item.icon className="w-5 h-5" />
             {item.label}
-          </button>
+          </Link>
         ))}
       </nav>
 
