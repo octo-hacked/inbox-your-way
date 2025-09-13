@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/Sidebar";
-import MainFeed, { type FeedPost } from "@/components/MainFeed";
+import MainFeed, { type FeedPost, type Category } from "@/components/MainFeed";
 import InboxSidebar from "@/components/InboxSidebar";
 
 const Index = () => {
   const [monochrome, setMonochrome] = useState(false);
   const [postPreview, setPostPreview] = useState<FeedPost | null>(null);
+  const allCategories: Category[] = ["memes", "news", "other"];
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>(allCategories);
+  const [lowDopamineOnly, setLowDopamineOnly] = useState(false);
 
   const inboxRef = useRef<HTMLDivElement | null>(null);
   const [fly, setFly] = useState<
@@ -81,8 +84,16 @@ const Index = () => {
         </div>
       )}
 
-      <Sidebar monochrome={monochrome} onToggleMonochrome={setMonochrome} />
-      <MainFeed onOpenComments={handleOpenComments} />
+      <Sidebar
+        monochrome={monochrome}
+        onToggleMonochrome={setMonochrome}
+        selectedCategories={selectedCategories}
+        onToggleCategory={(c) => setSelectedCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))}
+        onSelectAllCategories={() => setSelectedCategories(allCategories)}
+        lowDopamineOnly={lowDopamineOnly}
+        onToggleLowDopamine={setLowDopamineOnly}
+      />
+      <MainFeed onOpenComments={handleOpenComments} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} />
       <div ref={inboxRef} className="relative">
         <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} />
       </div>
