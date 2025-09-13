@@ -19,7 +19,7 @@ const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComp
 const postImageFor = (seed: string | number) => `https://picsum.photos/seed/${encodeURIComponent(String(seed))}/600/400`;
 
 type MainFeedProps = {
-  onOpenComments?: (post: FeedPost) => void;
+  onOpenComments?: (post: FeedPost, fromRect: DOMRect) => void;
 };
 
 const MainFeed = ({ onOpenComments }: MainFeedProps) => {
@@ -153,7 +153,7 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
         {/* Posts Grid */}
         <div className="grid grid-cols-2 gap-6 pb-6">
           {posts.map((post) => (
-            <div key={post.id} className="bg-card rounded-lg overflow-hidden">
+            <div key={post.id} data-post-card className="bg-card rounded-lg overflow-hidden">
               {/* Post Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -173,7 +173,13 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
                   </button>
                   <button
                     aria-label="Comment"
-                    onClick={() => onOpenComments && onOpenComments(post)}
+                    onClick={(e) => {
+                      const imgEl = document.getElementById(`post-image-${post.id}`);
+                      const cardEl = (e.currentTarget as HTMLElement).closest('[data-post-card]') as HTMLElement | null;
+                      const rect = (imgEl || cardEl)?.getBoundingClientRect();
+                      if (rect && onOpenComments) onOpenComments(post, rect);
+                      else if (onOpenComments) onOpenComments(post, new DOMRect(0, 0, 0, 0));
+                    }}
                     className="p-1 hover:bg-hover-bg rounded transition-colors"
                   >
                     <MessageCircle className="w-5 h-5 text-icon-color" />
@@ -190,7 +196,7 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
 
               {/* Post Content */}
               <div className="h-48 bg-post-bg">
-                <img src={post.image} alt="Post" className="w-full h-48 object-cover" />
+                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="w-full h-48 object-cover" />
               </div>
 
               {/* Post Description & Stats */}
