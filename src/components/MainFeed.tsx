@@ -1,6 +1,9 @@
 import { Heart, MessageCircle, Send } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
+const postImageFor = (seed: string | number) => `https://picsum.photos/seed/${encodeURIComponent(String(seed))}/600/400`;
+
 const MainFeed = () => {
   const stories = [
     { id: 1, username: "sarah_chen", active: true },
@@ -19,7 +22,9 @@ const MainFeed = () => {
       content: "Just finished reading about mindful technology and how it can help us stay present in our digital lives. The concept of finite feeds is fascinating!",
       likes: 23,
       comments: 5,
-      time: "2h"
+      time: "2h",
+      image: postImageFor("sarah-1"),
+      avatar: avatarFor("sarah_chen")
     },
     {
       id: 2,
@@ -27,7 +32,9 @@ const MainFeed = () => {
       content: "Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.",
       likes: 45,
       comments: 12,
-      time: "4h"
+      time: "4h",
+      image: postImageFor("alex-2"),
+      avatar: avatarFor("alex_m")
     },
     {
       id: 3,
@@ -35,7 +42,9 @@ const MainFeed = () => {
       content: "Loving the minimalist approach to social media. Sometimes less really is more when it comes to staying focused and productive.",
       likes: 18,
       comments: 3,
-      time: "6h"
+      time: "6h",
+      image: postImageFor("jordan-3"),
+      avatar: avatarFor("jordan.k")
     },
     {
       id: 4,
@@ -43,7 +52,9 @@ const MainFeed = () => {
       content: "The power of intentional design in creating healthy digital habits. Every feature should serve a purpose and respect the user's time.",
       likes: 31,
       comments: 8,
-      time: "8h"
+      time: "8h",
+      image: postImageFor("emma-4"),
+      avatar: avatarFor("emma_w")
     },
     {
       id: 5,
@@ -51,7 +62,9 @@ const MainFeed = () => {
       content: "Building technology that enhances rather than detracts from our real-world connections. That's the future I want to be part of.",
       likes: 67,
       comments: 15,
-      time: "12h"
+      time: "12h",
+      image: postImageFor("marcus-5"),
+      avatar: avatarFor("marcus.j")
     },
     {
       id: 6,
@@ -59,7 +72,9 @@ const MainFeed = () => {
       content: "Simple reminder: your attention is your most valuable asset. Choose where to invest it wisely.",
       likes: 89,
       comments: 22,
-      time: "1d"
+      time: "1d",
+      image: postImageFor("lisa-6"),
+      avatar: avatarFor("lisa_z")
     }
   ];
 
@@ -72,6 +87,11 @@ const MainFeed = () => {
             {stories.map((story) => (
               <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
                 <div className={`w-16 h-16 rounded-full bg-muted mb-2 relative ${story.active ? 'ring-2 ring-accent ring-offset-2' : ''}`}>
+                  <img
+                    src={avatarFor(story.username)}
+                    alt={`${story.username} story`}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
                   {story.active && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full"></div>
                   )}
@@ -90,7 +110,7 @@ const MainFeed = () => {
               {/* Post Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-muted"></div>
+                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover" />
                   <div>
                     <span className="text-sm font-medium text-foreground">{post.username}</span>
                     <div className="text-xs text-muted-foreground">{post.time}</div>
@@ -110,7 +130,9 @@ const MainFeed = () => {
               </div>
 
               {/* Post Content */}
-              <div className="h-48 bg-post-bg"></div>
+              <div className="h-48 bg-post-bg">
+                <img src={post.image} alt="Post" className="w-full h-48 object-cover" />
+              </div>
 
               {/* Post Description & Stats */}
               <div className="p-4">
