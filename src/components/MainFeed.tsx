@@ -1,7 +1,36 @@
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, MessageCircle, Send, Share2, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
-const MainFeed = () => {
+export type Category = "memes" | "news" | "other";
+
+export type FeedPost = {
+  id: number;
+  username: string;
+  content: string;
+  likes: number;
+  comments: number;
+  time: string;
+  image: string;
+  avatar: string;
+  category: Category;
+  lowDopamine: boolean;
+  isVerified: boolean;
+  liked?: boolean;
+};
+
+const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
+const postImageFor = (seed: string | number) => `https://picsum.photos/seed/${encodeURIComponent(String(seed))}/600/400`;
+
+type MainFeedProps = {
+  onOpenComments?: (post: FeedPost, fromRect: DOMRect) => void;
+  selectedCategories?: Category[];
+  lowDopamineOnly?: boolean;
+};
+
+const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainFeedProps) => {
+  const { toast } = useToast();
   const stories = [
     { id: 1, username: "sarah_chen", active: true },
     { id: 2, username: "alex_m", active: false },
@@ -12,14 +41,19 @@ const MainFeed = () => {
     { id: 7, username: "david.r", active: true }
   ];
 
-  const posts = [
+  const [posts, setPosts] = useState<FeedPost[]>([
     {
       id: 1,
       username: "sarah_chen",
       content: "Just finished reading about mindful technology and how it can help us stay present in our digital lives. The concept of finite feeds is fascinating!",
       likes: 23,
       comments: 5,
-      time: "2h"
+      time: "2h",
+      image: postImageFor("sarah-1"),
+      avatar: avatarFor("sarah_chen"),
+      category: "news",
+      lowDopamine: true,
+      isVerified: true
     },
     {
       id: 2,
@@ -27,7 +61,12 @@ const MainFeed = () => {
       content: "Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.",
       likes: 45,
       comments: 12,
-      time: "4h"
+      time: "4h",
+      image: postImageFor("alex-2"),
+      avatar: avatarFor("alex_m"),
+      category: "other",
+      lowDopamine: false,
+      isVerified: false
     },
     {
       id: 3,
@@ -35,7 +74,12 @@ const MainFeed = () => {
       content: "Loving the minimalist approach to social media. Sometimes less really is more when it comes to staying focused and productive.",
       likes: 18,
       comments: 3,
-      time: "6h"
+      time: "6h",
+      image: postImageFor("jordan-3"),
+      avatar: avatarFor("jordan.k"),
+      category: "memes",
+      lowDopamine: false,
+      isVerified: false
     },
     {
       id: 4,
@@ -43,7 +87,12 @@ const MainFeed = () => {
       content: "The power of intentional design in creating healthy digital habits. Every feature should serve a purpose and respect the user's time.",
       likes: 31,
       comments: 8,
-      time: "8h"
+      time: "8h",
+      image: postImageFor("emma-4"),
+      avatar: avatarFor("emma_w"),
+      category: "news",
+      lowDopamine: true,
+      isVerified: true
     },
     {
       id: 5,
@@ -51,7 +100,12 @@ const MainFeed = () => {
       content: "Building technology that enhances rather than detracts from our real-world connections. That's the future I want to be part of.",
       likes: 67,
       comments: 15,
-      time: "12h"
+      time: "12h",
+      image: postImageFor("marcus-5"),
+      avatar: avatarFor("marcus.j"),
+      category: "other",
+      lowDopamine: true,
+      isVerified: false
     },
     {
       id: 6,
@@ -59,9 +113,46 @@ const MainFeed = () => {
       content: "Simple reminder: your attention is your most valuable asset. Choose where to invest it wisely.",
       likes: 89,
       comments: 22,
-      time: "1d"
+      time: "1d",
+      image: postImageFor("lisa-6"),
+      avatar: avatarFor("lisa_z"),
+      category: "memes",
+      lowDopamine: false,
+      isVerified: false
     }
-  ];
+  ]);
+
+  const toggleLike = (id: number) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p,
+      ),
+    );
+  };
+
+  const sharePost = async (post: FeedPost) => {
+    const shareData = {
+      title: `Post by ${post.username}`,
+      text: post.content,
+      url: `#post-${post.id}`,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${window.location.origin}/${shareData.url}`);
+        toast({ title: "Link copied", description: "Post link copied to clipboard" });
+      } else {
+        toast({ title: "Sharing not supported", description: "Cannot share on this device" });
+      }
+    } catch (_) {
+      // ignore
+    }
+  };
+
+  const activeCategories: Category[] = selectedCategories && selectedCategories.length > 0 ? selectedCategories : ["memes", "news", "other"];
+  const onlyLow = Boolean(lowDopamineOnly);
+  const visiblePosts = posts.filter((p) => activeCategories.includes(p.category) && (!onlyLow || p.lowDopamine));
 
   return (
     <ScrollArea className="flex-1 h-screen main-feed-scroll">
@@ -72,6 +163,11 @@ const MainFeed = () => {
             {stories.map((story) => (
               <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
                 <div className={`w-16 h-16 rounded-full bg-muted mb-2 relative ${story.active ? 'ring-2 ring-accent ring-offset-2' : ''}`}>
+                  <img
+                    src={avatarFor(story.username)}
+                    alt={`${story.username} story`}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
                   {story.active && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full"></div>
                   )}
@@ -85,36 +181,61 @@ const MainFeed = () => {
 
         {/* Posts Grid */}
         <div className="grid grid-cols-2 gap-6 pb-6">
-          {posts.map((post) => (
-            <div key={post.id} className="bg-card rounded-lg overflow-hidden">
+          {visiblePosts.map((post) => (
+            <div key={post.id} data-post-card className="bg-card rounded-lg overflow-hidden">
               {/* Post Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-muted"></div>
+                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover" />
                   <div>
-                    <span className="text-sm font-medium text-foreground">{post.username}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-medium text-foreground">{post.username}</span>
+                      {post.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
+                    </div>
                     <div className="text-xs text-muted-foreground">{post.time}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-1 hover:bg-hover-bg rounded transition-colors">
-                    <Heart className="w-5 h-5 text-icon-color" />
+                  <button
+                    aria-label="Like"
+                    onClick={() => toggleLike(post.id)}
+                    className={`p-1 hover:bg-hover-bg rounded transition-colors ${post.liked ? "text-red-500" : ""}`}
+                  >
+                    <Heart className={`w-5 h-5 ${post.liked ? "stroke-red-500 fill-red-500" : "text-icon-color"}`} />
                   </button>
-                  <button className="p-1 hover:bg-hover-bg rounded transition-colors">
+                  <button
+                    aria-label="Comment"
+                    onClick={(e) => {
+                      const imgEl = document.getElementById(`post-image-${post.id}`);
+                      const cardEl = (e.currentTarget as HTMLElement).closest('[data-post-card]') as HTMLElement | null;
+                      const rect = (imgEl || cardEl)?.getBoundingClientRect();
+                      if (rect && onOpenComments) onOpenComments(post, rect);
+                      else if (onOpenComments) onOpenComments(post, new DOMRect(0, 0, 0, 0));
+                    }}
+                    className="p-1 hover:bg-hover-bg rounded transition-colors"
+                  >
                     <MessageCircle className="w-5 h-5 text-icon-color" />
                   </button>
-                  <button className="p-1 hover:bg-hover-bg rounded transition-colors">
-                    <Send className="w-5 h-5 text-icon-color" />
+                  <button
+                    aria-label="Share"
+                    onClick={() => sharePost(post)}
+                    className="p-1 hover:bg-hover-bg rounded transition-colors"
+                  >
+                    <Share2 className="w-5 h-5 text-icon-color" />
                   </button>
                 </div>
               </div>
 
               {/* Post Content */}
-              <div className="h-48 bg-post-bg"></div>
+              <div className="h-48 bg-post-bg">
+                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="w-full h-48 object-cover" />
+              </div>
 
               {/* Post Description & Stats */}
               <div className="p-4">
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                  <span className="px-2 py-0.5 rounded bg-muted text-foreground capitalize">{post.category}</span>
+                  {post.lowDopamine && <span className="px-2 py-0.5 rounded bg-muted text-foreground">Low Dopamine</span>}
                   <span>{post.likes} likes</span>
                   <span>{post.comments} comments</span>
                 </div>

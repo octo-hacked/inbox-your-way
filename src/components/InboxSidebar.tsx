@@ -1,16 +1,74 @@
 import { useState } from "react";
-import { Send, MoreHorizontal, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
+import { Send, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { FeedPost } from "@/components/MainFeed";
 
-const InboxSidebar = () => {
-  const [selectedChat, setSelectedChat] = useState(null);
+const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
+
+type InboxSidebarProps = {
+  postPreview?: FeedPost | null;
+  onBackFromPost?: () => void;
+};
+
+const InboxSidebar = ({ postPreview, onBackFromPost }: InboxSidebarProps) => {
+  const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
 
+  if (postPreview) {
+    const comments = [
+      { id: 1, user: "alex_m", avatar: avatarFor("alex_m"), text: "Love this!", time: "2m" },
+      { id: 2, user: "jordan.k", avatar: avatarFor("jordan.k"), text: "Totally agree.", time: "10m" },
+      { id: 3, user: "emma_w", avatar: avatarFor("emma_w"), text: "So well said.", time: "1h" }
+    ];
+
+    return (
+      <div className="w-80 h-screen bg-card border-l border-border flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-border flex items-center gap-2">
+          <button onClick={onBackFromPost} className="p-1 hover:bg-hover-bg rounded transition-colors" aria-label="Back to inbox">
+            <ArrowLeft className="w-5 h-5 text-icon-color" />
+          </button>
+          <h2 className="text-lg font-semibold text-foreground">Post</h2>
+        </div>
+
+        {/* Post Preview */}
+        <ScrollArea className="flex-1 inbox-scroll">
+          <div className="p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <img src={postPreview.avatar} alt={`${postPreview.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+              <div>
+                <div className="text-sm font-medium text-foreground">{postPreview.username}</div>
+                <div className="text-xs text-muted-foreground">{postPreview.time}</div>
+              </div>
+            </div>
+            <div className="w-full overflow-hidden rounded-md bg-post-bg">
+              <img src={postPreview.image} alt="Post" className="w-full h-48 object-cover" />
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">{postPreview.content}</p>
+            <div className="h-px w-full bg-border" />
+            <div className="space-y-3">
+              {comments.map((c) => (
+                <div key={c.id} className="flex items-start gap-3">
+                  <img src={c.avatar} alt={c.user} className="w-7 h-7 rounded-full object-cover" />
+                  <div>
+                    <div className="text-sm text-foreground"><span className="font-medium">{c.user}</span> {c.text}</div>
+                    <div className="text-[10px] text-muted-foreground">{c.time}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  }
+
+  // Default inbox UI
   const conversations = [
     {
       id: 1,
       name: "Sarah Chen",
-      avatar: "",
+      avatar: avatarFor("Sarah Chen"),
       lastMessage: "Thanks for sharing that article!",
       time: "2m",
       unread: true,
@@ -19,7 +77,7 @@ const InboxSidebar = () => {
     {
       id: 2,
       name: "Alex Morgan",
-      avatar: "",
+      avatar: avatarFor("Alex Morgan"),
       lastMessage: "Let's catch up soon",
       time: "1h",
       unread: false,
@@ -28,7 +86,7 @@ const InboxSidebar = () => {
     {
       id: 3,
       name: "Jordan Kim",
-      avatar: "",
+      avatar: avatarFor("Jordan Kim"),
       lastMessage: "Great presentation today",
       time: "3h",
       unread: false,
@@ -37,7 +95,7 @@ const InboxSidebar = () => {
     {
       id: 4,
       name: "Emma Wilson",
-      avatar: "",
+      avatar: avatarFor("Emma Wilson"),
       lastMessage: "See you at the meeting",
       time: "1d",
       unread: true,
@@ -46,7 +104,7 @@ const InboxSidebar = () => {
     {
       id: 5,
       name: "Marcus Johnson",
-      avatar: "",
+      avatar: avatarFor("Marcus Johnson"),
       lastMessage: "The project looks amazing",
       time: "2d",
       unread: false,
@@ -54,7 +112,7 @@ const InboxSidebar = () => {
     }
   ];
 
-  const messages = {
+  const messages: Record<number, { id: number; text: string; sender: "me" | "other"; time: string }[]> = {
     1: [
       { id: 1, text: "Hey! How are you doing?", sender: "other", time: "10:30 AM" },
       { id: 2, text: "I'm doing great!", sender: "me", time: "10:32 AM" },
@@ -71,7 +129,7 @@ const InboxSidebar = () => {
   };
 
   const currentChat = conversations.find(c => c.id === selectedChat);
-  const currentMessages = messages[selectedChat] || [];
+  const currentMessages = selectedChat ? messages[selectedChat] || [] : [];
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -93,7 +151,7 @@ const InboxSidebar = () => {
             </button>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-muted"></div>
+                <img src={currentChat?.avatar} alt={currentChat?.name} className="w-8 h-8 rounded-full object-cover" />
                 {currentChat?.online && (
                   <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-white rounded-full"></div>
                 )}
@@ -194,7 +252,7 @@ const InboxSidebar = () => {
           >
             <div className="flex items-start gap-3">
               <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-muted"></div>
+                <img src={conversation.avatar} alt={conversation.name} className="w-12 h-12 rounded-full object-cover" />
                 {conversation.online && (
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                 )}
