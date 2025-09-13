@@ -14,7 +14,7 @@ const MainFeed = () => {
   }));
 
   return (
-    <ScrollArea className="flex-1 main-feed-scroll">
+    <ScrollArea className="flex-1 h-screen main-feed-scroll">
       <div className="p-6">
         {/* Stories Section */}
         <div className="mb-8">

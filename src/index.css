@@ -114,28 +114,23 @@ All colors MUST be HSL.
 
 @layer components {
   /* Custom scrollbars for different sections */
-  .main-feed-scroll [data-radix-scroll-area-scrollbar] {
+  .main-feed-scroll .scrollbar {
     @apply w-2;
   }
-  
-  .main-feed-scroll [data-radix-scroll-area-thumb] {
+  .main-feed-scroll .scroll-thumb {
     @apply bg-primary/20 rounded-full;
   }
-  
-  .inbox-scroll [data-radix-scroll-area-scrollbar] {
+
+  .inbox-scroll .scrollbar {
     @apply w-1.5;
   }
-  
-  .inbox-scroll [data-radix-scroll-area-thumb] {
+  .inbox-scroll .scroll-thumb {
     @apply bg-accent/30 rounded-full;
   }
-  
-  /* Hover-specific scrolling */
-  .main-feed-scroll:not(:hover) [data-radix-scroll-area-scrollbar] {
-    @apply opacity-0 pointer-events-none;
-  }
-  
-  .inbox-scroll:not(:hover) [data-radix-scroll-area-scrollbar] {
+
+  /* Hide scrollbars until hover (scroll still works with mouse wheel/trackpad) */
+  .main-feed-scroll:not(:hover) .scrollbar,
+  .inbox-scroll:not(:hover) .scrollbar {
     @apply opacity-0 pointer-events-none;
   }
 }
