@@ -1,10 +1,29 @@
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, MessageCircle, Send, Share2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
+export type FeedPost = {
+  id: number;
+  username: string;
+  content: string;
+  likes: number;
+  comments: number;
+  time: string;
+  image: string;
+  avatar: string;
+  liked?: boolean;
+};
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
 const postImageFor = (seed: string | number) => `https://picsum.photos/seed/${encodeURIComponent(String(seed))}/600/400`;
 
-const MainFeed = () => {
+type MainFeedProps = {
+  onOpenComments?: (post: FeedPost) => void;
+};
+
+const MainFeed = ({ onOpenComments }: MainFeedProps) => {
+  const { toast } = useToast();
   const stories = [
     { id: 1, username: "sarah_chen", active: true },
     { id: 2, username: "alex_m", active: false },
@@ -15,7 +34,7 @@ const MainFeed = () => {
     { id: 7, username: "david.r", active: true }
   ];
 
-  const posts = [
+  const [posts, setPosts] = useState<FeedPost[]>([
     {
       id: 1,
       username: "sarah_chen",
@@ -76,7 +95,35 @@ const MainFeed = () => {
       image: postImageFor("lisa-6"),
       avatar: avatarFor("lisa_z")
     }
-  ];
+  ]);
+
+  const toggleLike = (id: number) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p,
+      ),
+    );
+  };
+
+  const sharePost = async (post: FeedPost) => {
+    const shareData = {
+      title: `Post by ${post.username}`,
+      text: post.content,
+      url: `#post-${post.id}`,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${window.location.origin}/${shareData.url}`);
+        toast({ title: "Link copied", description: "Post link copied to clipboard" });
+      } else {
+        toast({ title: "Sharing not supported", description: "Cannot share on this device" });
+      }
+    } catch (_) {
+      // ignore
+    }
+  };
 
   return (
     <ScrollArea className="flex-1 h-screen main-feed-scroll">
@@ -117,14 +164,26 @@ const MainFeed = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-1 hover:bg-hover-bg rounded transition-colors">
-                    <Heart className="w-5 h-5 text-icon-color" />
+                  <button
+                    aria-label="Like"
+                    onClick={() => toggleLike(post.id)}
+                    className={`p-1 hover:bg-hover-bg rounded transition-colors ${post.liked ? "text-red-500" : ""}`}
+                  >
+                    <Heart className={`w-5 h-5 ${post.liked ? "stroke-red-500 fill-red-500" : "text-icon-color"}`} />
                   </button>
-                  <button className="p-1 hover:bg-hover-bg rounded transition-colors">
+                  <button
+                    aria-label="Comment"
+                    onClick={() => onOpenComments && onOpenComments(post)}
+                    className="p-1 hover:bg-hover-bg rounded transition-colors"
+                  >
                     <MessageCircle className="w-5 h-5 text-icon-color" />
                   </button>
-                  <button className="p-1 hover:bg-hover-bg rounded transition-colors">
-                    <Send className="w-5 h-5 text-icon-color" />
+                  <button
+                    aria-label="Share"
+                    onClick={() => sharePost(post)}
+                    className="p-1 hover:bg-hover-bg rounded transition-colors"
+                  >
+                    <Share2 className="w-5 h-5 text-icon-color" />
                   </button>
                 </div>
               </div>
