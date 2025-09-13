@@ -2,7 +2,12 @@ import { Home, MessageCircle, Bell, BookOpen, Settings, User } from "lucide-reac
 import { Switch } from "@/components/ui/switch";
 import { Link, useLocation } from "react-router-dom";
 
-const Sidebar = () => {
+type SidebarProps = {
+  monochrome: boolean;
+  onToggleMonochrome: (checked: boolean) => void;
+};
+
+const Sidebar = ({ monochrome, onToggleMonochrome }: SidebarProps) => {
   const location = useLocation();
   
   const navigationItems = [
@@ -69,7 +74,7 @@ const Sidebar = () => {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-foreground font-medium">Monochrome</span>
-          <Switch />
+          <Switch checked={monochrome} onCheckedChange={onToggleMonochrome} />
         </div>
       </div>
 
