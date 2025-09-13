@@ -1,13 +1,19 @@
 import { Home, MessageCircle, Bell, BookOpen, Settings, User } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Link, useLocation } from "react-router-dom";
+import type { Category } from "@/components/MainFeed";
 
 type SidebarProps = {
   monochrome: boolean;
   onToggleMonochrome: (checked: boolean) => void;
+  selectedCategories: Category[];
+  onToggleCategory: (category: Category) => void;
+  onSelectAllCategories: () => void;
+  lowDopamineOnly: boolean;
+  onToggleLowDopamine: (checked: boolean) => void;
 };
 
-const Sidebar = ({ monochrome, onToggleMonochrome }: SidebarProps) => {
+const Sidebar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggleCategory, onSelectAllCategories, lowDopamineOnly, onToggleLowDopamine }: SidebarProps) => {
   const location = useLocation();
   
   const navigationItems = [
@@ -17,12 +23,10 @@ const Sidebar = ({ monochrome, onToggleMonochrome }: SidebarProps) => {
     { icon: BookOpen, label: "Capsules", path: "/capsules" },
   ];
 
-  const contentFilters = [
-    "Memes",
-    "Memes", 
-    "Memes",
-    "Memes",
-    "Memes"
+  const contentFilters: { key: Category; label: string }[] = [
+    { key: "memes", label: "Memes" },
+    { key: "news", label: "News" },
+    { key: "other", label: "Other" },
   ];
 
   return (
@@ -54,15 +58,27 @@ const Sidebar = ({ monochrome, onToggleMonochrome }: SidebarProps) => {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <span className="text-foreground font-medium">Content Filter</span>
-          <Switch />
+          <button
+            onClick={onSelectAllCategories}
+            className="text-xs text-accent hover:underline"
+          >
+            All
+          </button>
         </div>
         <div className="space-y-2">
-          {contentFilters.map((filter, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-muted"></div>
-              <span className="text-muted-foreground text-sm">{filter}</span>
-            </div>
-          ))}
+          {contentFilters.map((filter) => {
+            const active = selectedCategories.includes(filter.key);
+            return (
+              <button
+                key={filter.key}
+                onClick={() => onToggleCategory(filter.key)}
+                className={`w-full flex items-center gap-2 px-2 py-1 rounded ${active ? "bg-hover-bg text-foreground" : "text-muted-foreground hover:bg-hover-bg"}`}
+              >
+                <div className={`w-3 h-3 rounded-full ${active ? "bg-accent" : "bg-muted"}`}></div>
+                <span className="text-sm">{filter.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -70,7 +86,7 @@ const Sidebar = ({ monochrome, onToggleMonochrome }: SidebarProps) => {
       <div className="space-y-4 mb-auto">
         <div className="flex items-center justify-between">
           <span className="text-foreground font-medium">Low Dopamine</span>
-          <Switch />
+          <Switch checked={lowDopamineOnly} onCheckedChange={onToggleLowDopamine} />
         </div>
         <div className="flex items-center justify-between">
           <span className="text-foreground font-medium">Monochrome</span>
