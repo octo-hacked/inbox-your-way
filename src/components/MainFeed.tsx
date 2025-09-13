@@ -1,7 +1,9 @@
-import { Heart, MessageCircle, Send, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Share2, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+
+export type Category = "memes" | "news" | "other";
 
 export type FeedPost = {
   id: number;
@@ -12,6 +14,9 @@ export type FeedPost = {
   time: string;
   image: string;
   avatar: string;
+  category: Category;
+  lowDopamine: boolean;
+  isVerified: boolean;
   liked?: boolean;
 };
 
@@ -20,9 +25,11 @@ const postImageFor = (seed: string | number) => `https://picsum.photos/seed/${en
 
 type MainFeedProps = {
   onOpenComments?: (post: FeedPost, fromRect: DOMRect) => void;
+  selectedCategories?: Category[];
+  lowDopamineOnly?: boolean;
 };
 
-const MainFeed = ({ onOpenComments }: MainFeedProps) => {
+const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainFeedProps) => {
   const { toast } = useToast();
   const stories = [
     { id: 1, username: "sarah_chen", active: true },
@@ -43,7 +50,10 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
       comments: 5,
       time: "2h",
       image: postImageFor("sarah-1"),
-      avatar: avatarFor("sarah_chen")
+      avatar: avatarFor("sarah_chen"),
+      category: "news",
+      lowDopamine: true,
+      isVerified: true
     },
     {
       id: 2,
@@ -53,7 +63,10 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
       comments: 12,
       time: "4h",
       image: postImageFor("alex-2"),
-      avatar: avatarFor("alex_m")
+      avatar: avatarFor("alex_m"),
+      category: "other",
+      lowDopamine: false,
+      isVerified: false
     },
     {
       id: 3,
@@ -63,7 +76,10 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
       comments: 3,
       time: "6h",
       image: postImageFor("jordan-3"),
-      avatar: avatarFor("jordan.k")
+      avatar: avatarFor("jordan.k"),
+      category: "memes",
+      lowDopamine: false,
+      isVerified: false
     },
     {
       id: 4,
@@ -73,7 +89,10 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
       comments: 8,
       time: "8h",
       image: postImageFor("emma-4"),
-      avatar: avatarFor("emma_w")
+      avatar: avatarFor("emma_w"),
+      category: "news",
+      lowDopamine: true,
+      isVerified: true
     },
     {
       id: 5,
@@ -83,7 +102,10 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
       comments: 15,
       time: "12h",
       image: postImageFor("marcus-5"),
-      avatar: avatarFor("marcus.j")
+      avatar: avatarFor("marcus.j"),
+      category: "other",
+      lowDopamine: true,
+      isVerified: false
     },
     {
       id: 6,
@@ -93,7 +115,10 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
       comments: 22,
       time: "1d",
       image: postImageFor("lisa-6"),
-      avatar: avatarFor("lisa_z")
+      avatar: avatarFor("lisa_z"),
+      category: "memes",
+      lowDopamine: false,
+      isVerified: false
     }
   ]);
 
@@ -125,6 +150,10 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
     }
   };
 
+  const activeCategories: Category[] = selectedCategories && selectedCategories.length > 0 ? selectedCategories : ["memes", "news", "other"];
+  const onlyLow = Boolean(lowDopamineOnly);
+  const visiblePosts = posts.filter((p) => activeCategories.includes(p.category) && (!onlyLow || p.lowDopamine));
+
   return (
     <ScrollArea className="flex-1 h-screen main-feed-scroll">
       <div className="p-6">
@@ -152,14 +181,17 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
 
         {/* Posts Grid */}
         <div className="grid grid-cols-2 gap-6 pb-6">
-          {posts.map((post) => (
+          {visiblePosts.map((post) => (
             <div key={post.id} data-post-card className="bg-card rounded-lg overflow-hidden">
               {/* Post Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover" />
                   <div>
-                    <span className="text-sm font-medium text-foreground">{post.username}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-medium text-foreground">{post.username}</span>
+                      {post.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
+                    </div>
                     <div className="text-xs text-muted-foreground">{post.time}</div>
                   </div>
                 </div>
@@ -202,6 +234,8 @@ const MainFeed = ({ onOpenComments }: MainFeedProps) => {
               {/* Post Description & Stats */}
               <div className="p-4">
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                  <span className="px-2 py-0.5 rounded bg-muted text-foreground capitalize">{post.category}</span>
+                  {post.lowDopamine && <span className="px-2 py-0.5 rounded bg-muted text-foreground">Low Dopamine</span>}
                   <span>{post.likes} likes</span>
                   <span>{post.comments} comments</span>
                 </div>
