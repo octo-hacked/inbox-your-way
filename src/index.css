@@ -108,5 +108,34 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  /* Custom scrollbars for different sections */
+  .main-feed-scroll [data-radix-scroll-area-scrollbar] {
+    @apply w-2;
+  }
+  
+  .main-feed-scroll [data-radix-scroll-area-thumb] {
+    @apply bg-primary/20 rounded-full;
+  }
+  
+  .inbox-scroll [data-radix-scroll-area-scrollbar] {
+    @apply w-1.5;
+  }
+  
+  .inbox-scroll [data-radix-scroll-area-thumb] {
+    @apply bg-accent/30 rounded-full;
+  }
+  
+  /* Hover-specific scrolling */
+  .main-feed-scroll:not(:hover) [data-radix-scroll-area-scrollbar] {
+    @apply opacity-0 pointer-events-none;
+  }
+  
+  .inbox-scroll:not(:hover) [data-radix-scroll-area-scrollbar] {
+    @apply opacity-0 pointer-events-none;
   }
 }

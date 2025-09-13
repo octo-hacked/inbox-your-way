@@ -1,4 +1,5 @@
 import { Send, MoreHorizontal } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const InboxSidebar = () => {
   const conversations = [
@@ -47,7 +48,7 @@ const InboxSidebar = () => {
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1 inbox-scroll">
         {conversations.map((conversation) => (
           <div 
             key={conversation.id}
@@ -74,7 +75,7 @@ const InboxSidebar = () => {
             </div>
           </div>
         ))}
-      </div>
+      </ScrollArea>
 
       {/* Compose Button */}
       <div className="p-4 border-t border-border">
