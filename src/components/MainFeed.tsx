@@ -160,7 +160,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
         </div>
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-2 gap-6 pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
           {visiblePosts.map((post) => (
             <div key={post.id} data-post-card className="bg-card rounded-lg overflow-hidden">
               {/* Post Header */}
