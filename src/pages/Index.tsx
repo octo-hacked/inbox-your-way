@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import BottomBar from "@/components/BottomBar";
 import MainFeed, { type FeedPost, type Category } from "@/components/MainFeed";
 import InboxSidebar from "@/components/InboxSidebar";
 
@@ -121,7 +122,22 @@ const Index = () => {
         </div>
       )}
 
-      <Sidebar
+      <div className="hidden md:block">
+        <Sidebar
+          monochrome={monochrome}
+          onToggleMonochrome={setMonochrome}
+          selectedCategories={selectedCategories}
+          onToggleCategory={(c) => setSelectedCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))}
+          onSelectAllCategories={() => setSelectedCategories(allCategories)}
+          lowDopamineOnly={lowDopamineOnly}
+          onToggleLowDopamine={setLowDopamineOnly}
+        />
+      </div>
+      <MainFeed onOpenComments={handleOpenComments} onOpenShare={handleOpenShare} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} />
+      <div ref={inboxRef} className="relative hidden xl:block">
+        <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} postToShare={postToShare} onBackFromShare={() => setPostToShare(null)} />
+      </div>
+      <BottomBar
         monochrome={monochrome}
         onToggleMonochrome={setMonochrome}
         selectedCategories={selectedCategories}
@@ -130,10 +146,6 @@ const Index = () => {
         lowDopamineOnly={lowDopamineOnly}
         onToggleLowDopamine={setLowDopamineOnly}
       />
-      <MainFeed onOpenComments={handleOpenComments} onOpenShare={handleOpenShare} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} />
-      <div ref={inboxRef} className="relative">
-        <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} postToShare={postToShare} onBackFromShare={() => setPostToShare(null)} />
-      </div>
     </div>
   );
 };
