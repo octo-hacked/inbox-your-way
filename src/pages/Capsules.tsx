@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import BottomBar from "@/components/BottomBar";
 import ReelsFeed from "@/components/ReelsFeed";
 import InboxSidebar from "@/components/InboxSidebar";
 import type { FeedPost, Category } from "@/components/MainFeed";
@@ -119,7 +120,22 @@ const Capsules = () => {
         </div>
       )}
 
-      <Sidebar
+      <div className="hidden md:block">
+        <Sidebar
+          monochrome={monochrome}
+          onToggleMonochrome={setMonochrome}
+          selectedCategories={selectedCategories}
+          onToggleCategory={(c) => setSelectedCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))}
+          onSelectAllCategories={() => setSelectedCategories(allCategories)}
+          lowDopamineOnly={lowDopamineOnly}
+          onToggleLowDopamine={setLowDopamineOnly}
+        />
+      </div>
+      <ReelsFeed onOpenComments={handleOpenComments} onOpenShare={handleOpenShare} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} onBack={() => (window.location.href = "/")} />
+      <div ref={inboxRef} className="relative hidden xl:block">
+        <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} postToShare={postToShare} onBackFromShare={() => setPostToShare(null)} />
+      </div>
+      <BottomBar
         monochrome={monochrome}
         onToggleMonochrome={setMonochrome}
         selectedCategories={selectedCategories}
@@ -128,10 +144,6 @@ const Capsules = () => {
         lowDopamineOnly={lowDopamineOnly}
         onToggleLowDopamine={setLowDopamineOnly}
       />
-      <ReelsFeed onOpenComments={handleOpenComments} onOpenShare={handleOpenShare} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} onBack={() => (window.location.href = "/")} />
-      <div ref={inboxRef} className="relative">
-        <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} postToShare={postToShare} onBackFromShare={() => setPostToShare(null)} />
-      </div>
     </div>
   );
 };
