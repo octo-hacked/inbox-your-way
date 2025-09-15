@@ -101,6 +101,10 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
   const current = visibleReels[currentIndex] || null;
   const prevIndexRef = useRef<number>(-1);
 
+  const [leaving, setLeaving] = useState<Reel | null>(null);
+  const [phase, setPhase] = useState<"start" | "end" | null>(null);
+  const [dir, setDir] = useState<"next" | "prev" | null>(null);
+
   useEffect(() => {
     if (currentIndex > visibleReels.length - 1) {
       setCurrentIndex(Math.max(0, visibleReels.length - 1));
@@ -124,14 +128,33 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
     }
   }, [currentIndex, current?.id, visibleReels]);
 
+  const go = (next: boolean) => {
+    setCurrentIndex((i) => {
+      const n = next ? Math.min(visibleReels.length - 1, i + 1) : Math.max(0, i - 1);
+      if (n === i) return i;
+      setLeaving(visibleReels[i] || null);
+      setDir(next ? "next" : "prev");
+      setPhase("start");
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setPhase("end"));
+      });
+      const total = 450;
+      window.setTimeout(() => {
+        setLeaving(null);
+        setPhase(null);
+      }, total);
+      return n;
+    });
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
-        setCurrentIndex((i) => Math.min(visibleReels.length - 1, i + 1));
+        go(true);
       } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
-        setCurrentIndex((i) => Math.max(0, i - 1));
+        go(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -140,7 +163,7 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
 
   return (
     <div className="flex-1 h-screen relative flex items-center justify-center">
-      <div className="absolute top-4 left-4 z-10">
+      <div className="absolute top-4 left-4 z-20">
         <button onClick={onBack} className="flex items-center gap-2 px-3 py-1.5 rounded bg-black/50 text-white text-sm hover:bg-black/60">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
@@ -164,66 +187,122 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
             isVerified: reel.isVerified,
             liked: reel.liked,
           };
+
+          const enterFrom = dir === "next" ? 40 : -40;
+          const leaveTo = dir === "next" ? -40 : 40;
+          const transition = "transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 450ms ease";
+
           return (
-            <div key={reel.id} data-reel-card className="relative w-[380px] h-[80vh] bg-black rounded-xl overflow-hidden shadow-lg">
-              <video
-                id={`reel-video-${reel.id}`}
-                data-reel
-                src={reel.video}
-                poster={reel.poster}
-                className="w-full h-full object-cover"
-                muted
-                loop
-                playsInline
-                autoPlay
-              />
-
-              <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4">
-                <button
-                  aria-label="Like"
-                  onClick={() => toggleLike(reel.id)}
-                  className={`p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors ${reel.liked ? "text-red-500" : "text-white"}`}
-                >
-                  <Heart className={`w-6 h-6 ${reel.liked ? "stroke-red-500 fill-red-500" : ""}`} />
-                </button>
-                <button
-                  aria-label="Comment"
-                  onClick={(e) => {
-                    const vidEl = document.getElementById(`reel-video-${reel.id}`);
-                    const cardEl = (e.currentTarget as HTMLElement).closest('[data-reel-card]') as HTMLElement | null;
-                    const rect = (vidEl || cardEl)?.getBoundingClientRect();
-                    if (rect && onOpenComments) onOpenComments(feedPost, rect);
-                    else if (onOpenComments) onOpenComments(feedPost, new DOMRect(0, 0, 0, 0));
+            <div className="relative w-[380px] h-[80vh]">
+              {leaving && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    transition,
+                    transform: phase === "start" ? "translateY(0px)" : `translateY(${leaveTo}px)`,
+                    opacity: phase === "start" ? 1 : 0,
                   }}
-                  className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white"
                 >
-                  <MessageCircle className="w-6 h-6" />
-                </button>
-                <button
-                  aria-label="Share"
-                  onClick={(e) => {
-                    const vidEl = document.getElementById(`reel-video-${reel.id}`);
-                    const cardEl = (e.currentTarget as HTMLElement).closest('[data-reel-card]') as HTMLElement | null;
-                    const rect = (vidEl || cardEl)?.getBoundingClientRect();
-                    if (rect && onOpenShare) onOpenShare(feedPost, rect);
-                    else if (onOpenShare) onOpenShare(feedPost, new DOMRect(0, 0, 0, 0));
-                  }}
-                  className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white"
-                >
-                  <Share2 className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
-                <div className="flex items-center gap-2 mb-1">
-                  <img src={reel.avatar} className="w-8 h-8 rounded-full object-cover" alt={reel.username} />
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm font-medium">{reel.username}</span>
-                    {reel.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
+                  <div data-reel-card className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-lg">
+                    <video
+                      id={`reel-video-${leaving.id}`}
+                      data-reel
+                      src={leaving.video}
+                      poster={leaving.poster}
+                      className="w-full h-full object-cover"
+                      muted
+                      loop
+                      playsInline
+                    />
+                    <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4 text-white">
+                      <button aria-label="Like" className={`p-2 rounded-full bg-black/40 ${leaving.liked ? "text-red-500" : "text-white"}`}>
+                        <Heart className={`w-6 h-6 ${leaving.liked ? "stroke-red-500 fill-red-500" : ""}`} />
+                      </button>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <img src={leaving.avatar} className="w-8 h-8 rounded-full object-cover" alt={leaving.username} />
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-medium">{leaving.username}</span>
+                          {leaving.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
+                        </div>
+                        <span className="ml-auto text-xs opacity-80">{leaving.time}</span>
+                      </div>
+                      <p className="text-sm leading-tight opacity-95 line-clamp-3">{leaving.description}</p>
+                    </div>
                   </div>
-                  <span className="ml-auto text-xs opacity-80">{reel.time}</span>
                 </div>
-                <p className="text-sm leading-tight opacity-95 line-clamp-3">{reel.description}</p>
+              )}
+
+              <div
+                className="absolute inset-0"
+                style={{
+                  transition,
+                  transform: phase === "start" ? `translateY(${enterFrom}px)` : "translateY(0px)",
+                  opacity: phase === "start" ? 0 : 1,
+                }}
+              >
+                <div key={reel.id} data-reel-card className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-lg">
+                  <video
+                    id={`reel-video-${reel.id}`}
+                    data-reel
+                    src={reel.video}
+                    poster={reel.poster}
+                    className="w-full h-full object-cover"
+                    muted
+                    loop
+                    playsInline
+                    autoPlay
+                  />
+
+                  <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4">
+                    <button
+                      aria-label="Like"
+                      onClick={() => toggleLike(reel.id)}
+                      className={`p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors ${reel.liked ? "text-red-500" : "text-white"}`}
+                    >
+                      <Heart className={`w-6 h-6 ${reel.liked ? "stroke-red-500 fill-red-500" : ""}`} />
+                    </button>
+                    <button
+                      aria-label="Comment"
+                      onClick={(e) => {
+                        const vidEl = document.getElementById(`reel-video-${reel.id}`);
+                        const cardEl = (e.currentTarget as HTMLElement).closest('[data-reel-card]') as HTMLElement | null;
+                        const rect = (vidEl || cardEl)?.getBoundingClientRect();
+                        if (rect && onOpenComments) onOpenComments(feedPost, rect);
+                        else if (onOpenComments) onOpenComments(feedPost, new DOMRect(0, 0, 0, 0));
+                      }}
+                      className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white"
+                    >
+                      <MessageCircle className="w-6 h-6" />
+                    </button>
+                    <button
+                      aria-label="Share"
+                      onClick={(e) => {
+                        const vidEl = document.getElementById(`reel-video-${reel.id}`);
+                        const cardEl = (e.currentTarget as HTMLElement).closest('[data-reel-card]') as HTMLElement | null;
+                        const rect = (vidEl || cardEl)?.getBoundingClientRect();
+                        if (rect && onOpenShare) onOpenShare(feedPost, rect);
+                        else if (onOpenShare) onOpenShare(feedPost, new DOMRect(0, 0, 0, 0));
+                      }}
+                      className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white"
+                    >
+                      <Share2 className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                    <div className="flex items-center gap-2 mb-1">
+                      <img src={reel.avatar} className="w-8 h-8 rounded-full object-cover" alt={reel.username} />
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium">{reel.username}</span>
+                        {reel.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
+                      </div>
+                      <span className="ml-auto text-xs opacity-80">{reel.time}</span>
+                    </div>
+                    <p className="text-sm leading-tight opacity-95 line-clamp-3">{reel.description}</p>
+                  </div>
+                </div>
               </div>
             </div>
           );
