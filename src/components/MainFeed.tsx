@@ -1,7 +1,6 @@
-import { Heart, MessageCircle, Send, Share2, BadgeCheck } from "lucide-react";
+import { Heart, MessageCircle, Share2, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 export type Category = "memes" | "news" | "other";
 
@@ -25,12 +24,12 @@ const postImageFor = (seed: string | number) => `https://picsum.photos/seed/${en
 
 type MainFeedProps = {
   onOpenComments?: (post: FeedPost, fromRect: DOMRect) => void;
+  onOpenShare?: (post: FeedPost, fromRect: DOMRect) => void;
   selectedCategories?: Category[];
   lowDopamineOnly?: boolean;
 };
 
-const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainFeedProps) => {
-  const { toast } = useToast();
+const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamineOnly }: MainFeedProps) => {
   const stories = [
     { id: 1, username: "sarah_chen", active: true },
     { id: 2, username: "alex_m", active: false },
@@ -130,25 +129,6 @@ const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainF
     );
   };
 
-  const sharePost = async (post: FeedPost) => {
-    const shareData = {
-      title: `Post by ${post.username}`,
-      text: post.content,
-      url: `#post-${post.id}`,
-    };
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${window.location.origin}/${shareData.url}`);
-        toast({ title: "Link copied", description: "Post link copied to clipboard" });
-      } else {
-        toast({ title: "Sharing not supported", description: "Cannot share on this device" });
-      }
-    } catch (_) {
-      // ignore
-    }
-  };
 
   const activeCategories: Category[] = selectedCategories && selectedCategories.length > 0 ? selectedCategories : ["memes", "news", "other"];
   const onlyLow = Boolean(lowDopamineOnly);
@@ -218,7 +198,13 @@ const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainF
                   </button>
                   <button
                     aria-label="Share"
-                    onClick={() => sharePost(post)}
+                    onClick={(e) => {
+                      const imgEl = document.getElementById(`post-image-${post.id}`);
+                      const cardEl = (e.currentTarget as HTMLElement).closest('[data-post-card]') as HTMLElement | null;
+                      const rect = (imgEl || cardEl)?.getBoundingClientRect();
+                      if (rect && onOpenShare) onOpenShare(post, rect);
+                      else if (onOpenShare) onOpenShare(post, new DOMRect(0, 0, 0, 0));
+                    }}
                     className="p-1 hover:bg-hover-bg rounded transition-colors"
                   >
                     <Share2 className="w-5 h-5 text-icon-color" />
