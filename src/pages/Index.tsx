@@ -6,6 +6,7 @@ import InboxSidebar from "@/components/InboxSidebar";
 const Index = () => {
   const [monochrome, setMonochrome] = useState(false);
   const [postPreview, setPostPreview] = useState<FeedPost | null>(null);
+  const [postToShare, setPostToShare] = useState<FeedPost | null>(null);
   const allCategories: Category[] = ["memes", "news", "other"];
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(allCategories);
   const [lowDopamineOnly, setLowDopamineOnly] = useState(false);
@@ -58,6 +59,42 @@ const Index = () => {
     }, totalMs);
   };
 
+  const handleOpenShare = (post: FeedPost, fromRect: DOMRect) => {
+    const inboxRect = inboxRef.current?.getBoundingClientRect();
+    if (!inboxRect || !fromRect || (fromRect.width === 0 && fromRect.height === 0)) {
+      setPostToShare(post);
+      return;
+    }
+
+    const from = { left: fromRect.left, top: fromRect.top, width: fromRect.width, height: fromRect.height };
+
+    const padding = 16;
+    const targetWidth = Math.min(Math.max(140, Math.min(inboxRect.width - padding * 2, from.width)), 220);
+    const aspect = from.width / Math.max(1, from.height);
+    const targetHeight = Math.max(100, Math.min(inboxRect.height - 140, targetWidth / Math.max(0.25, Math.min(2.5, aspect))))
+
+    const to = {
+      left: inboxRect.left + padding,
+      top: inboxRect.top + 72,
+      width: targetWidth,
+      height: targetHeight,
+    };
+
+    setFly({ img: post.image, from, to });
+    setPhase("start");
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setPhase("end"));
+    });
+
+    const totalMs = 450;
+    window.setTimeout(() => {
+      setFly(null);
+      setPhase(null);
+      setPostToShare(post);
+    }, totalMs);
+  };
+
   return (
     <div className={`flex min-h-screen bg-background ${monochrome ? "grayscale" : ""}`}>
       {/* Animation overlay */}
@@ -93,9 +130,9 @@ const Index = () => {
         lowDopamineOnly={lowDopamineOnly}
         onToggleLowDopamine={setLowDopamineOnly}
       />
-      <MainFeed onOpenComments={handleOpenComments} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} />
+      <MainFeed onOpenComments={handleOpenComments} onOpenShare={handleOpenShare} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} />
       <div ref={inboxRef} className="relative">
-        <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} />
+        <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} postToShare={postToShare} onBackFromShare={() => setPostToShare(null)} />
       </div>
     </div>
   );
