@@ -105,6 +105,21 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
   const [phase, setPhase] = useState<"start" | "end" | null>(null);
   const [dir, setDir] = useState<"next" | "prev" | null>(null);
 
+  // responsive reel height for mobile full-bleed
+  const [reelHeight, setReelHeight] = useState<number>(() => Math.round(window.innerHeight * 0.8));
+  useEffect(() => {
+    const update = () => {
+      const isMobile = window.innerWidth < 768;
+      const bottomBar = isMobile ? 56 : 0; // BottomBar height
+      const margin = isMobile ? 12 : Math.round(window.innerHeight * 0.1);
+      const h = Math.max(420, Math.min(window.innerHeight - bottomBar - margin, isMobile ? window.innerHeight : Math.round(window.innerHeight * 0.82)));
+      setReelHeight(h);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   useEffect(() => {
     if (currentIndex > visibleReels.length - 1) {
       setCurrentIndex(Math.max(0, visibleReels.length - 1));
@@ -146,6 +161,9 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
       return n;
     });
   };
+
+  const wheelLock = useRef<number>(0);
+  const touchStartY = useRef<number | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -193,7 +211,24 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
           const transition = "transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 450ms ease";
 
           return (
-            <div className="relative w-[380px] h-[80vh]">
+            <div
+              className="relative w-full max-w-[480px] md:w-[380px]"
+              style={{ height: reelHeight }}
+              onWheel={(e) => {
+                const now = Date.now();
+                if (now - wheelLock.current < 500) return;
+                if (e.deltaY > 10) { wheelLock.current = now; go(true); }
+                else if (e.deltaY < -10) { wheelLock.current = now; go(false); }
+              }}
+              onTouchStart={(e) => { touchStartY.current = e.touches[0].clientY; }}
+              onTouchEnd={(e) => {
+                if (touchStartY.current == null) return;
+                const dy = e.changedTouches[0].clientY - touchStartY.current;
+                touchStartY.current = null;
+                if (Math.abs(dy) < 40) return;
+                if (dy < 0) go(true); else go(false);
+              }}
+            >
               {leaving && (
                 <div
                   className="absolute inset-0"
