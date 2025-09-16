@@ -109,8 +109,13 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     overflow: hidden;
+    overflow-x: hidden;
   }
 }
+
+/* hide native scrollbars utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 @layer components {
   /* Custom scrollbars for different sections */
