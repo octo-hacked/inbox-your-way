@@ -139,7 +139,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
       <div className="p-6">
         {/* Stories Section */}
         <div className="mb-8">
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4 items-center overflow-x-auto no-scrollbar">
             {stories.map((story) => (
               <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
                 <div className={`w-16 h-16 rounded-full bg-muted mb-2 relative ${story.active ? 'ring-2 ring-accent ring-offset-2' : ''}`}>
