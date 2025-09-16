@@ -138,4 +138,8 @@ All colors MUST be HSL.
   .inbox-scroll:not(:hover) .scrollbar {
     @apply opacity-0 pointer-events-none;
   }
+
+  @media (max-width: 767px) {
+    .main-feed-scroll .scrollbar { display: none; }
+  }
 }
