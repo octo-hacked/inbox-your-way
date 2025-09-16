@@ -164,6 +164,7 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
 
   const wheelLock = useRef<number>(0);
   const touchStartY = useRef<number | null>(null);
+  const touchDeltaY = useRef<number>(0);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -180,7 +181,7 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
   }, [visibleReels.length]);
 
   return (
-    <div className="flex-1 h-screen relative flex items-center justify-center">
+    <div className="flex-1 h-screen relative flex items-stretch justify-center">
       <div className="absolute top-4 left-4 z-20">
         <button onClick={onBack} className="flex items-center gap-2 px-3 py-1.5 rounded bg-black/50 text-white text-sm hover:bg-black/60">
           <ArrowLeft className="w-4 h-4" /> Back
@@ -213,18 +214,19 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
           return (
             <div
               className="relative w-full max-w-[480px] md:w-[380px]"
-              style={{ height: reelHeight }}
+              style={{ height: reelHeight, touchAction: "pan-y" }}
               onWheel={(e) => {
                 const now = Date.now();
                 if (now - wheelLock.current < 500) return;
                 if (e.deltaY > 10) { wheelLock.current = now; go(true); }
                 else if (e.deltaY < -10) { wheelLock.current = now; go(false); }
               }}
-              onTouchStart={(e) => { touchStartY.current = e.touches[0].clientY; }}
-              onTouchEnd={(e) => {
-                if (touchStartY.current == null) return;
-                const dy = e.changedTouches[0].clientY - touchStartY.current;
+              onTouchStart={(e) => { touchStartY.current = e.touches[0].clientY; touchDeltaY.current = 0; }}
+              onTouchMove={(e) => { if (touchStartY.current != null) touchDeltaY.current = e.touches[0].clientY - touchStartY.current; }}
+              onTouchEnd={() => {
+                const dy = touchDeltaY.current;
                 touchStartY.current = null;
+                touchDeltaY.current = 0;
                 if (Math.abs(dy) < 40) return;
                 if (dy < 0) go(true); else go(false);
               }}
