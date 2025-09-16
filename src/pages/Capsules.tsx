@@ -3,12 +3,14 @@ import Sidebar from "@/components/Sidebar";
 import BottomBar from "@/components/BottomBar";
 import ReelsFeed from "@/components/ReelsFeed";
 import InboxSidebar from "@/components/InboxSidebar";
+import CommentsSheet from "@/components/CommentsSheet";
 import type { FeedPost, Category } from "@/components/MainFeed";
 
 const Capsules = () => {
   const [monochrome, setMonochrome] = useState(false);
   const [postPreview, setPostPreview] = useState<FeedPost | null>(null);
   const [postToShare, setPostToShare] = useState<FeedPost | null>(null);
+  const [mobileComments, setMobileComments] = useState<FeedPost | null>(null);
   const allCategories: Category[] = ["memes", "news", "other"];
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(allCategories);
   const [lowDopamineOnly, setLowDopamineOnly] = useState(false);
@@ -25,6 +27,10 @@ const Capsules = () => {
   const [phase, setPhase] = useState<"start" | "end" | null>(null);
 
   const handleOpenComments = (post: FeedPost, fromRect: DOMRect) => {
+    if (window.innerWidth < 1280) { // xl breakpoint: inbox hidden
+      setMobileComments(post);
+      return;
+    }
     const inboxRect = inboxRef.current?.getBoundingClientRect();
     if (!inboxRect || !fromRect || (fromRect.width === 0 && fromRect.height === 0)) {
       setPostPreview(post);
@@ -135,6 +141,7 @@ const Capsules = () => {
       <div ref={inboxRef} className="relative hidden xl:block">
         <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} postToShare={postToShare} onBackFromShare={() => setPostToShare(null)} />
       </div>
+      <CommentsSheet open={!!mobileComments} post={mobileComments} onClose={() => setMobileComments(null)} />
       <BottomBar
         monochrome={monochrome}
         onToggleMonochrome={setMonochrome}
