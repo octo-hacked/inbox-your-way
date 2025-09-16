@@ -254,7 +254,7 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
                         <Heart className={`w-6 h-6 ${leaving.liked ? "stroke-red-500 fill-red-500" : ""}`} />
                       </button>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 pb-16 md:pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
                       <div className="flex items-center gap-2 mb-1">
                         <img src={leaving.avatar} className="w-8 h-8 rounded-full object-cover" alt={leaving.username} />
                         <div className="flex items-center gap-1">
@@ -326,7 +326,7 @@ const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamin
                     </button>
                   </div>
 
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 pb-16 md:pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
                     <div className="flex items-center gap-2 mb-1">
                       <img src={reel.avatar} className="w-8 h-8 rounded-full object-cover" alt={reel.username} />
                       <div className="flex items-center gap-1">
