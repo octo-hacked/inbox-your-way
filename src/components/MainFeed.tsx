@@ -135,8 +135,8 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
   const visiblePosts = posts.filter((p) => activeCategories.includes(p.category) && (!onlyLow || p.lowDopamine));
 
   return (
-    <ScrollArea className="flex-1 h-screen main-feed-scroll">
-      <div className="p-6">
+    <ScrollArea className="flex-1 h-screen w-full overflow-x-hidden main-feed-scroll">
+      <div className="p-4 md:p-6">
         {/* Stories Section */}
         <div className="mb-8">
           <div className="flex gap-4 items-center overflow-x-auto no-scrollbar">
@@ -160,7 +160,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
         </div>
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-20 md:pb-6">
           {visiblePosts.map((post) => (
             <div key={post.id} data-post-card className="bg-card rounded-lg overflow-hidden">
               {/* Post Header */}
