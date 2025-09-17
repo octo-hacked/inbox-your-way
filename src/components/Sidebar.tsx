@@ -1,8 +1,9 @@
-import { Home, MessageCircle, Bell, BookOpen, Settings, User, Filter, Sliders } from "lucide-react";
+import { Home, MessageCircle, Bell, BookOpen, Settings, User, Filter, Sliders, LogOut } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Link, useLocation } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Category } from "@/components/MainFeed";
+import { useAuth } from "@/context/AuthContext";
 
 type SidebarProps = {
   monochrome: boolean;
@@ -16,6 +17,7 @@ type SidebarProps = {
 
 const Sidebar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggleCategory, onSelectAllCategories, lowDopamineOnly, onToggleLowDopamine }: SidebarProps) => {
   const location = useLocation();
+  const { signOut, loading } = useAuth();
   
   const navigationItems = [
     { icon: Home, label: "Home", path: "/" },
@@ -161,6 +163,10 @@ const Sidebar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggleC
         <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors">
           <User className="w-5 h-5" />
           <span className="hidden lg:inline">Profile</span>
+        </button>
+        <button onClick={() => signOut()} disabled={loading} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors disabled:opacity-60">
+          <LogOut className="w-5 h-5" />
+          <span className="hidden lg:inline">Log out</span>
         </button>
       </div>
     </div>
