@@ -135,7 +135,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
   const visiblePosts = posts.filter((p) => activeCategories.includes(p.category) && (!onlyLow || p.lowDopamine));
 
   return (
-    <ScrollArea className="flex-1 h-screen w-full overflow-x-hidden main-feed-scroll">
+    <ScrollArea className="flex-1 h-screen w-screen overflow-x-hidden main-feed-scroll">
       <div className="px-0 md:px-6 py-2 md:py-6">
         {/* Stories Section */}
         <div className="mb-8">
@@ -213,7 +213,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
               </div>
 
               {/* Post Content */}
-              <div className="bg-post-bg w-full aspect-square md:aspect-auto md:h-48">
+              <div className="bg-post-bg w-full h-[100vw] aspect-square md:aspect-auto md:h-48">
                 <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="block w-full  md:h-48 object-cover" />
               </div>
 
