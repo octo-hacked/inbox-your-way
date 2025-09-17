@@ -77,9 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Logout request failed:", error);
     } finally {
       persist({ user: null, accessToken: null, refreshToken: null });
+      toast({ title: "Logged out", description: "You have been signed out." });
       setLoading(false);
     }
-  }, [persist, state.accessToken]);
+  }, [persist, state.accessToken, toast]);
 
   const signIn = useCallback(
     async ({ email, password }: { email: string; password: string }) => {
