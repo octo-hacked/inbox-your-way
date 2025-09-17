@@ -47,6 +47,7 @@ const BottomBar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggl
             <Drawer.Portal>
               <Drawer.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
               <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t border-border bg-card">
+                <Drawer.Title className="sr-only">Settings</Drawer.Title>
                 <div className="p-4">
                   <div className="mx-auto h-1 w-12 rounded-full bg-muted mb-4" />
                   <h3 className="text-base font-semibold mb-3 text-foreground">Settings</h3>

@@ -27,6 +27,7 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t border-border bg-card">
+          <Drawer.Title className="sr-only">Comments</Drawer.Title>
           <div className="p-3 border-b border-border flex items-center gap-2">
             <button onClick={onClose} className="p-1 hover:bg-hover-bg rounded" aria-label="Back">
               <ArrowLeft className="w-5 h-5" />
