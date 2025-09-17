@@ -23,7 +23,7 @@ type AuthContextType = AuthState & {
   signIn: (params: { email: string; password: string }) => Promise<void>;
   // Changed `name` to `fullname` to match your API
   signUp: (params: { email: string; password: string; fullname: string }) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   // The refresh function is kept for future implementation
   // refresh: () => Promise<void>;
 };
@@ -61,9 +61,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     saveToStorage(next);
   }, []);
 
-  const signOut = useCallback(() => {
-    persist({ user: null, accessToken: null, refreshToken: null });
-  }, [persist]);
+  const signOut = useCallback(async () => {
+    try {
+      setLoading(true);
+      await axios.post(
+        "http://localhost:3000/api/v1//users/logout",
+        {},
+        {
+          withCredentials: true,
+          headers: state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : undefined,
+        }
+      );
+    } catch (error) {
+      // Intentionally ignore API errors during logout; proceed with local sign-out
+      console.error("Logout request failed:", error);
+    } finally {
+      persist({ user: null, accessToken: null, refreshToken: null });
+      setLoading(false);
+    }
+  }, [persist, state.accessToken]);
 
   const signIn = useCallback(
     async ({ email, password }: { email: string; password: string }) => {
@@ -95,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: error.response?.data?.message || "An unexpected error occurred.",
           variant: "destructive",
         });
-        signOut(); // Clear any partial state
+        await signOut(); // Clear any partial state
       } finally {
         setLoading(false);
       }
