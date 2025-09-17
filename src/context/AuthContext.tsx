@@ -124,11 +124,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async ({ email, password, fullname, username }: { email: string; password: string; fullname: string; username: string }) => {
       setLoading(true);
       try {
-        const res = await axios.post("http://localhost:3000/api/v1/users/register", {
-          email,
-          password,
-          fullname,
-          username,
+        const { generateAvatarFile } = await import("@/lib/avatar");
+        const avatar = await generateAvatarFile(username || fullname);
+        const form = new FormData();
+        form.append("fullname", fullname);
+        form.append("username", username);
+        form.append("email", email);
+        form.append("password", password);
+        form.append("avatar", avatar);
+
+        const res = await axios.post("http://localhost:3000/api/v1/users/register", form, {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
         });
 
         if (res.data.success) {
