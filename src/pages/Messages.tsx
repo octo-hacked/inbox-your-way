@@ -2,11 +2,23 @@ import { useState } from "react";
 import { ArrowLeft, Send, Paperclip, Smile, Phone, Video, MoreVertical } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
+import BottomBar from "@/components/BottomBar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import type { Category } from "@/components/MainFeed";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
 
 const Messages = () => {
-  const [selectedChat, setSelectedChat] = useState(1);
+  const isMobile = useIsMobile();
+
+  // Mobile-friendly defaults and BottomBar state
+  const [monochrome, setMonochrome] = useState(false);
+  const allCategories: Category[] = ["memes", "news", "other"];
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>(allCategories);
+  const [lowDopamineOnly, setLowDopamineOnly] = useState(false);
+
+  // Start with no chat selected on mobile for a proper list-first UX
+  const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
 
   const conversations = [
@@ -80,75 +92,87 @@ const Messages = () => {
     ]
   };
 
-  const currentChat = conversations.find(c => c.id === selectedChat);
-  const currentMessages = messages[selectedChat] || [];
+  const currentChat = conversations.find(c => c.id === selectedChat!);
+  const currentMessages = selectedChat ? (messages[selectedChat] || []) : [];
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      // In a real app, you'd send this to your backend
       setNewMessage("");
     }
   };
 
-  return (
-    <div className="flex h-screen bg-background">
-      {/* Conversations List */}
-      <div className="w-80 bg-card border-r border-border flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="p-1 hover:bg-hover-bg rounded transition-colors">
-              <ArrowLeft className="w-5 h-5 text-icon-color" />
-            </Link>
-            <h2 className="text-lg font-semibold text-foreground">Messages</h2>
-          </div>
-        </div>
+  const showListOnMobile = isMobile && selectedChat !== null;
 
-        {/* Conversations */}
-        <ScrollArea className="flex-1 inbox-scroll">
-          {conversations.map((conversation) => (
-            <div 
-              key={conversation.id}
-              onClick={() => setSelectedChat(conversation.id)}
-              className={`p-4 border-b border-border hover:bg-hover-bg cursor-pointer transition-colors ${
-                selectedChat === conversation.id ? 'bg-hover-bg' : ''
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="relative">
-                  <img src={conversation.avatar} alt={conversation.name} className="w-12 h-12 rounded-full object-cover" />
-                  {conversation.online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                  )}
-                  {conversation.unread && (
-                    <div className="absolute -top-1 -left-1 w-3 h-3 bg-accent rounded-full"></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className={`text-sm ${conversation.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
-                      {conversation.name}
-                    </h3>
-                    <span className="text-xs text-muted-foreground">{conversation.time}</span>
-                  </div>
-                  <p className={`text-sm truncate ${conversation.unread ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {conversation.lastMessage}
-                  </p>
-                </div>
-              </div>
+  return (
+    <div className={`flex h-screen bg-background ${monochrome ? "grayscale" : ""}`}>
+      {/* Conversations List */}
+      {!(isMobile && selectedChat !== null) && (
+        <div className="w-full md:w-80 bg-card border-r border-border flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="p-1 hover:bg-hover-bg rounded transition-colors md:hidden">
+                <ArrowLeft className="w-5 h-5 text-icon-color" />
+              </Link>
+              <h2 className="text-lg font-semibold text-foreground">Messages</h2>
             </div>
-          ))}
-        </ScrollArea>
-      </div>
+          </div>
+
+          {/* Conversations */}
+          <ScrollArea className="flex-1 inbox-scroll">
+            <div className="pb-16 md:pb-0">
+              {conversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  onClick={() => setSelectedChat(conversation.id)}
+                  className={`p-4 border-b border-border hover:bg-hover-bg cursor-pointer transition-colors ${
+                    selectedChat === conversation.id ? 'bg-hover-bg' : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative">
+                      <img src={conversation.avatar} alt={conversation.name} className="w-12 h-12 rounded-full object-cover" />
+                      {conversation.online && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                      )}
+                      {conversation.unread && (
+                        <div className="absolute -top-1 -left-1 w-3 h-3 bg-accent rounded-full"></div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className={`text-sm ${conversation.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
+                          {conversation.name}
+                        </h3>
+                        <span className="text-xs text-muted-foreground">{conversation.time}</span>
+                      </div>
+                      <p className={`text-sm truncate ${conversation.unread ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {conversation.lastMessage}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col ${isMobile && selectedChat === null ? 'hidden' : ''}`}>
         {currentChat ? (
           <>
-            {/* Chat Header */}
-            <div className="p-4 border-b border-border bg-card">
+            {/* Mobile Chat Header */}
+            <div className="p-4 border-b border-border bg-card sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                  <button
+                    className="p-1 hover:bg-hover-bg rounded transition-colors md:hidden"
+                    onClick={() => setSelectedChat(null)}
+                    aria-label="Back to conversations"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-icon-color" />
+                  </button>
                   <div className="relative">
                     <img src={currentChat.avatar} alt={currentChat.name} className="w-10 h-10 rounded-full object-cover" />
                     {currentChat.online && (
@@ -178,21 +202,21 @@ const Messages = () => {
 
             {/* Messages */}
             <ScrollArea className="flex-1 main-feed-scroll">
-              <div className="p-4 space-y-4">
+              <div className="p-4 space-y-4 pb-20 md:pb-4">
                 {currentMessages.map((message) => (
-                  <div 
+                  <div
                     key={message.id}
                     className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-xs rounded-lg p-3 ${
-                      message.sender === 'me' 
-                        ? 'bg-primary text-primary-foreground' 
+                    <div className={`max-w-[80%] md:max-w-xs rounded-lg p-3 ${
+                      message.sender === 'me'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-foreground'
                     }`}>
                       <p className="text-sm">{message.text}</p>
                       <p className={`text-xs mt-1 ${
-                        message.sender === 'me' 
-                          ? 'text-primary-foreground/70' 
+                        message.sender === 'me'
+                          ? 'text-primary-foreground/70'
                           : 'text-muted-foreground'
                       }`}>
                         {message.time}
@@ -204,8 +228,8 @@ const Messages = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-border bg-card">
-              <div className="flex items-center gap-3">
+            <div className="p-3 md:p-4 border-t border-border bg-card">
+              <div className="flex items-center gap-2 md:gap-3">
                 <button className="p-2 hover:bg-hover-bg rounded transition-colors">
                   <Paperclip className="w-5 h-5 text-icon-color" />
                 </button>
@@ -215,14 +239,14 @@ const Messages = () => {
                     placeholder="Type a message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                     className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <button className="p-1 hover:bg-hover-bg rounded transition-colors">
                     <Smile className="w-4 h-4 text-icon-color" />
                   </button>
                 </div>
-                <button 
+                <button
                   onClick={handleSendMessage}
                   className="p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                 >
@@ -232,7 +256,7 @@ const Messages = () => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 hidden md:flex items-center justify-center">
             <div className="text-center">
               <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4"></div>
               <h3 className="text-lg font-medium text-foreground mb-2">Select a conversation</h3>
@@ -241,6 +265,17 @@ const Messages = () => {
           </div>
         )}
       </div>
+
+      {/* Bottom navigation on mobile */}
+      <BottomBar
+        monochrome={monochrome}
+        onToggleMonochrome={setMonochrome}
+        selectedCategories={selectedCategories}
+        onToggleCategory={(c) => setSelectedCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))}
+        onSelectAllCategories={() => setSelectedCategories(allCategories)}
+        lowDopamineOnly={lowDopamineOnly}
+        onToggleLowDopamine={setLowDopamineOnly}
+      />
     </div>
   );
 };
