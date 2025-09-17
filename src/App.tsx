@@ -8,26 +8,34 @@ import Messages from "./pages/Messages";
 import Capsules from "./pages/Capsules";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { AuthProvider } from "@/context/AuthContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/capsules" element={<Capsules />} />
-          <Route path="/notifications" element={<Notifications />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/capsules" element={<ProtectedRoute><Capsules /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="*" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </AuthProvider>
 );
 
 export default App;
