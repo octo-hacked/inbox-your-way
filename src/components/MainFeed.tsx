@@ -136,7 +136,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
 
   return (
     <ScrollArea className="flex-1 h-screen w-full overflow-x-hidden main-feed-scroll">
-      <div className="px-3 md:px-6 py-4 md:py-6">
+      <div className="px-0 md:px-6 py-4 md:py-6">
         {/* Stories Section */}
         <div className="mb-8">
           <div className="flex gap-4 items-center overflow-x-auto no-scrollbar">
@@ -160,9 +160,9 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
         </div>
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-24 md:pb-6 pr-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6 pb-24 md:pb-6">
           {visiblePosts.map((post) => (
-            <div key={post.id} data-post-card className="bg-card rounded-lg overflow-hidden">
+            <div key={post.id} data-post-card className="bg-card rounded-none md:rounded-lg overflow-hidden">
               {/* Post Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -213,8 +213,8 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
               </div>
 
               {/* Post Content */}
-              <div className="h-48 bg-post-bg">
-                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="w-full h-48 object-cover" />
+              <div className="bg-post-bg w-full aspect-square md:aspect-auto md:h-48">
+                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="w-full h-full md:h-48 object-cover" />
               </div>
 
               {/* Post Description & Stats */}
