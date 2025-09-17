@@ -109,8 +109,13 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     overflow: hidden;
+    overflow-x: hidden;
   }
 }
+
+/* hide native scrollbars utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 @layer components {
   /* Custom scrollbars for different sections */
@@ -132,5 +137,9 @@ All colors MUST be HSL.
   .main-feed-scroll:not(:hover) .scrollbar,
   .inbox-scroll:not(:hover) .scrollbar {
     @apply opacity-0 pointer-events-none;
+  }
+
+  @media (max-width: 767px) {
+    .main-feed-scroll .scrollbar { display: none; }
   }
 }

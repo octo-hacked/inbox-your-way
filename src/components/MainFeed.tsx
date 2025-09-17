@@ -1,7 +1,6 @@
-import { Heart, MessageCircle, Send, Share2, BadgeCheck } from "lucide-react";
+import { Heart, MessageCircle, Share2, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 export type Category = "memes" | "news" | "other";
 
@@ -25,12 +24,12 @@ const postImageFor = (seed: string | number) => `https://picsum.photos/seed/${en
 
 type MainFeedProps = {
   onOpenComments?: (post: FeedPost, fromRect: DOMRect) => void;
+  onOpenShare?: (post: FeedPost, fromRect: DOMRect) => void;
   selectedCategories?: Category[];
   lowDopamineOnly?: boolean;
 };
 
-const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainFeedProps) => {
-  const { toast } = useToast();
+const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamineOnly }: MainFeedProps) => {
   const stories = [
     { id: 1, username: "sarah_chen", active: true },
     { id: 2, username: "alex_m", active: false },
@@ -130,36 +129,17 @@ const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainF
     );
   };
 
-  const sharePost = async (post: FeedPost) => {
-    const shareData = {
-      title: `Post by ${post.username}`,
-      text: post.content,
-      url: `#post-${post.id}`,
-    };
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${window.location.origin}/${shareData.url}`);
-        toast({ title: "Link copied", description: "Post link copied to clipboard" });
-      } else {
-        toast({ title: "Sharing not supported", description: "Cannot share on this device" });
-      }
-    } catch (_) {
-      // ignore
-    }
-  };
 
   const activeCategories: Category[] = selectedCategories && selectedCategories.length > 0 ? selectedCategories : ["memes", "news", "other"];
   const onlyLow = Boolean(lowDopamineOnly);
   const visiblePosts = posts.filter((p) => activeCategories.includes(p.category) && (!onlyLow || p.lowDopamine));
 
   return (
-    <ScrollArea className="flex-1 h-screen main-feed-scroll">
-      <div className="p-6">
+    <ScrollArea className="flex-1 h-screen w-screen overflow-x-hidden main-feed-scroll">
+      <div className="px-0 md:px-6 py-2 md:py-6">
         {/* Stories Section */}
         <div className="mb-8">
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4 items-center overflow-x-auto no-scrollbar">
             {stories.map((story) => (
               <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
                 <div className={`w-16 h-16 rounded-full bg-muted mb-2 relative ${story.active ? 'ring-2 ring-accent ring-offset-2' : ''}`}>
@@ -180,11 +160,11 @@ const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainF
         </div>
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-2 gap-6 pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6 pb-24 md:pb-6 mx-0">
           {visiblePosts.map((post) => (
-            <div key={post.id} data-post-card className="bg-card rounded-lg overflow-hidden">
+            <div key={post.id} data-post-card className="bg-card rounded-none md:rounded-lg overflow-hidden w-full">
               {/* Post Header */}
-              <div className="p-4 flex items-center justify-between">
+              <div className="p-3 md:p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover" />
                   <div>
@@ -218,7 +198,13 @@ const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainF
                   </button>
                   <button
                     aria-label="Share"
-                    onClick={() => sharePost(post)}
+                    onClick={(e) => {
+                      const imgEl = document.getElementById(`post-image-${post.id}`);
+                      const cardEl = (e.currentTarget as HTMLElement).closest('[data-post-card]') as HTMLElement | null;
+                      const rect = (imgEl || cardEl)?.getBoundingClientRect();
+                      if (rect && onOpenShare) onOpenShare(post, rect);
+                      else if (onOpenShare) onOpenShare(post, new DOMRect(0, 0, 0, 0));
+                    }}
                     className="p-1 hover:bg-hover-bg rounded transition-colors"
                   >
                     <Share2 className="w-5 h-5 text-icon-color" />
@@ -227,12 +213,12 @@ const MainFeed = ({ onOpenComments, selectedCategories, lowDopamineOnly }: MainF
               </div>
 
               {/* Post Content */}
-              <div className="h-48 bg-post-bg">
-                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="w-full h-48 object-cover" />
+              <div className="bg-post-bg w-full h-[100vw] aspect-square md:aspect-auto md:h-48">
+                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="block w-full  md:h-48 object-cover" />
               </div>
 
               {/* Post Description & Stats */}
-              <div className="p-4">
+              <div className="p-3 md:p-4">
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                   <span className="px-2 py-0.5 rounded bg-muted text-foreground capitalize">{post.category}</span>
                   {post.lowDopamine && <span className="px-2 py-0.5 rounded bg-muted text-foreground">Low Dopamine</span>}

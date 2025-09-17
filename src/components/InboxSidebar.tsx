@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Send, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
 import type { FeedPost } from "@/components/MainFeed";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
@@ -8,11 +10,63 @@ const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComp
 type InboxSidebarProps = {
   postPreview?: FeedPost | null;
   onBackFromPost?: () => void;
+  postToShare?: FeedPost | null;
+  onBackFromShare?: () => void;
 };
 
-const InboxSidebar = ({ postPreview, onBackFromPost }: InboxSidebarProps) => {
+const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShare }: InboxSidebarProps) => {
   const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
+  const [selectedRecipients, setSelectedRecipients] = useState<number[]>([]);
+  const { toast } = useToast();
+
+  const conversations = [
+    {
+      id: 1,
+      name: "Sarah Chen",
+      avatar: avatarFor("Sarah Chen"),
+      lastMessage: "Thanks for sharing that article!",
+      time: "2m",
+      unread: true,
+      online: true
+    },
+    {
+      id: 2,
+      name: "Alex Morgan",
+      avatar: avatarFor("Alex Morgan"),
+      lastMessage: "Let's catch up soon",
+      time: "1h",
+      unread: false,
+      online: true
+    },
+    {
+      id: 3,
+      name: "Jordan Kim",
+      avatar: avatarFor("Jordan Kim"),
+      lastMessage: "Great presentation today",
+      time: "3h",
+      unread: false,
+      online: false
+    },
+    {
+      id: 4,
+      name: "Emma Wilson",
+      avatar: avatarFor("Emma Wilson"),
+      lastMessage: "See you at the meeting",
+      time: "1d",
+      unread: true,
+      online: false
+    },
+    {
+      id: 5,
+      name: "Marcus Johnson",
+      avatar: avatarFor("Marcus Johnson"),
+      lastMessage: "The project looks amazing",
+      time: "2d",
+      unread: false,
+      online: true
+    }
+  ];
 
   if (postPreview) {
     const comments = [
@@ -64,53 +118,6 @@ const InboxSidebar = ({ postPreview, onBackFromPost }: InboxSidebarProps) => {
   }
 
   // Default inbox UI
-  const conversations = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      avatar: avatarFor("Sarah Chen"),
-      lastMessage: "Thanks for sharing that article!",
-      time: "2m",
-      unread: true,
-      online: true
-    },
-    {
-      id: 2,
-      name: "Alex Morgan",
-      avatar: avatarFor("Alex Morgan"),
-      lastMessage: "Let's catch up soon",
-      time: "1h",
-      unread: false,
-      online: true
-    },
-    {
-      id: 3,
-      name: "Jordan Kim",
-      avatar: avatarFor("Jordan Kim"),
-      lastMessage: "Great presentation today",
-      time: "3h",
-      unread: false,
-      online: false
-    },
-    {
-      id: 4,
-      name: "Emma Wilson",
-      avatar: avatarFor("Emma Wilson"),
-      lastMessage: "See you at the meeting",
-      time: "1d",
-      unread: true,
-      online: false
-    },
-    {
-      id: 5,
-      name: "Marcus Johnson",
-      avatar: avatarFor("Marcus Johnson"),
-      lastMessage: "The project looks amazing",
-      time: "2d",
-      unread: false,
-      online: true
-    }
-  ];
 
   const messages: Record<number, { id: number; text: string; sender: "me" | "other"; time: string }[]> = {
     1: [
@@ -136,6 +143,81 @@ const InboxSidebar = ({ postPreview, onBackFromPost }: InboxSidebarProps) => {
       setNewMessage("");
     }
   };
+
+  if (postToShare) {
+    const toggleRecipient = (id: number) => {
+      setSelectedRecipients((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    };
+
+    const handleShare = () => {
+      if (selectedRecipients.length === 0) return;
+      const names = conversations.filter((c) => selectedRecipients.includes(c.id)).map((c) => c.name);
+      toast({ title: "Shared", description: `Shared with ${names.join(", ")}` });
+      setSelectedRecipients([]);
+      onBackFromShare?.();
+    };
+
+    return (
+      <div className="w-80 h-screen bg-card border-l border-border flex flex-col">
+        <div className="p-4 border-b border-border flex items-center gap-2">
+          <button onClick={onBackFromShare} className="p-1 hover:bg-hover-bg rounded transition-colors" aria-label="Back to inbox">
+            <ArrowLeft className="w-5 h-5 text-icon-color" />
+          </button>
+          <h2 className="text-lg font-semibold text-foreground">Share</h2>
+        </div>
+
+        <ScrollArea className="flex-1 inbox-scroll">
+          <div className="p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <img src={postToShare.avatar} alt={`${postToShare.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+              <div>
+                <div className="text-sm font-medium text-foreground">{postToShare.username}</div>
+                <div className="text-xs text-muted-foreground">{postToShare.time}</div>
+              </div>
+            </div>
+            <div className="w-full overflow-hidden rounded-md bg-post-bg">
+              <img src={postToShare.image} alt="Post" className="w-full h-36 object-cover" />
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">{postToShare.content}</p>
+            <div className="h-px w-full bg-border" />
+
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-foreground">Select recipients</div>
+              {conversations.map((c) => (
+                <label key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-hover-bg cursor-pointer">
+                  <div className="relative">
+                    <img src={c.avatar} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
+                    {c.online && (
+                      <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-white rounded-full"></div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-foreground">{c.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{c.lastMessage}</div>
+                  </div>
+                  <Checkbox
+                    checked={selectedRecipients.includes(c.id)}
+                    onCheckedChange={() => toggleRecipient(c.id)}
+                    aria-label={`Select ${c.name}`}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+        </ScrollArea>
+
+        <div className="p-4 border-t border-border">
+          <button
+            onClick={handleShare}
+            disabled={selectedRecipients.length === 0}
+            className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Share
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (selectedChat) {
     return (

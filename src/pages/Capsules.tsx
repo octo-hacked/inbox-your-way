@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import BottomBar from "@/components/BottomBar";
-import MainFeed, { type FeedPost, type Category } from "@/components/MainFeed";
+import ReelsFeed from "@/components/ReelsFeed";
 import InboxSidebar from "@/components/InboxSidebar";
 import CommentsSheet from "@/components/CommentsSheet";
+import type { FeedPost, Category } from "@/components/MainFeed";
 
-const Index = () => {
+const Capsules = () => {
   const [monochrome, setMonochrome] = useState(false);
   const [postPreview, setPostPreview] = useState<FeedPost | null>(null);
   const [postToShare, setPostToShare] = useState<FeedPost | null>(null);
@@ -57,7 +58,6 @@ const Index = () => {
       requestAnimationFrame(() => setPhase("end"));
     });
 
-    // After animation, open preview
     const totalMs = 450;
     window.setTimeout(() => {
       setFly(null);
@@ -104,13 +104,11 @@ const Index = () => {
 
   return (
     <div className={`flex min-h-screen bg-background ${monochrome ? "grayscale" : ""}`}>
-      {/* Animation overlay */}
       {fly && (
         <div className="pointer-events-none fixed inset-0 z-[9999]">
           <img
             src={fly.img}
             alt="flying"
-            onAnimationEnd={() => {}}
             style={{
               position: "fixed",
               left: phase === "start" ? fly.from.left : fly.to.left,
@@ -139,7 +137,7 @@ const Index = () => {
           onToggleLowDopamine={setLowDopamineOnly}
         />
       </div>
-      <MainFeed onOpenComments={handleOpenComments} onOpenShare={handleOpenShare} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} />
+      <ReelsFeed onOpenComments={handleOpenComments} onOpenShare={handleOpenShare} selectedCategories={selectedCategories} lowDopamineOnly={lowDopamineOnly} onBack={() => (window.location.href = "/")} />
       <div ref={inboxRef} className="relative hidden xl:block">
         <InboxSidebar postPreview={postPreview} onBackFromPost={() => setPostPreview(null)} postToShare={postToShare} onBackFromShare={() => setPostToShare(null)} />
       </div>
@@ -157,4 +155,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Capsules;
