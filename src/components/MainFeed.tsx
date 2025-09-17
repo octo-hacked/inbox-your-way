@@ -135,13 +135,13 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
   const visiblePosts = posts.filter((p) => activeCategories.includes(p.category) && (!onlyLow || p.lowDopamine));
 
   return (
-    <ScrollArea className="flex-1 h-screen w-screen overflow-x-hidden main-feed-scroll">
-      <div className="px-0 md:px-6 py-2 md:py-6">
+    <ScrollArea className="flex-1 h-screen  overflow-x-hidden main-feed-scroll">
+      <div className="px-0 md:px-6 py-4 md:py-6">
         {/* Stories Section */}
-        <div className="mb-8">
-          <div className="flex gap-4 items-center overflow-x-auto no-scrollbar">
+        <div className=" w-screen md:w-full">
+          <div className="flex gap-4 items-center overflow-x-auto no-scrollbar p-2"> {/* Adjusted px for mobile stories */}
             {stories.map((story) => (
-              <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
+              <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"> {/* Added flex-shrink-0 */}
                 <div className={`w-16 h-16 rounded-full bg-muted mb-2 relative ${story.active ? 'ring-2 ring-accent ring-offset-2' : ''}`}>
                   <img
                     src={avatarFor(story.username)}
@@ -160,22 +160,23 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
         </div>
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6 pb-24 md:pb-6 mx-0">
+        {/* Added px-4 for mobile padding to the grid container itself */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6 pb-24 md:pb-6  md:px-0"> {/* Removed lg:grid-cols-3 and added px-4 */}
           {visiblePosts.map((post) => (
-            <div key={post.id} data-post-card className="bg-card rounded-none md:rounded-lg overflow-hidden w-full">
+            <div key={post.id} data-post-card className="bg-card rounded-none md:rounded-lg overflow-hidden w-screen md:w-full mb-6 md:mb-0">
               {/* Post Header */}
               <div className="p-3 md:p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover" />
-                  <div>
+                <div className="flex items-center gap-3 min-w-0 flex-grow">
+                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" /> {/* Added flex-shrink-0 */}
+                  <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-1">
-                      <span className="text-sm font-medium text-foreground">{post.username}</span>
-                      {post.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
+                      <span className="text-sm font-medium text-foreground truncate">{post.username}</span>
+                      {post.isVerified && <BadgeCheck className="w-4 h-4 text-accent flex-shrink-0" />}
                     </div>
                     <div className="text-xs text-muted-foreground">{post.time}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     aria-label="Like"
                     onClick={() => toggleLike(post.id)}
@@ -213,17 +214,17 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
               </div>
 
               {/* Post Content */}
-              <div className="bg-post-bg w-full h-[100vw] aspect-square md:aspect-auto md:h-48">
-                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="block w-full  md:h-48 object-cover" />
+              <div className="bg-post-bg w-full aspect-square md:h-auto">
+                <img id={`post-image-${post.id}`} src={post.image} alt="Post" className="block w-full h-full object-cover" />
               </div>
 
               {/* Post Description & Stats */}
               <div className="p-3 md:p-4">
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
-                  <span className="px-2 py-0.5 rounded bg-muted text-foreground capitalize">{post.category}</span>
-                  {post.lowDopamine && <span className="px-2 py-0.5 rounded bg-muted text-foreground">Low Dopamine</span>}
-                  <span>{post.likes} likes</span>
-                  <span>{post.comments} comments</span>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2 overflow-x-auto no-scrollbar">
+                  <span className="px-2 py-0.5 rounded bg-muted text-foreground capitalize flex-shrink-0">{post.category}</span>
+                  {post.lowDopamine && <span className="px-2 py-0.5 rounded bg-muted text-foreground flex-shrink-0">Low Dopamine</span>}
+                  <span className="flex-shrink-0">{post.likes} likes</span>
+                  <span className="flex-shrink-0">{post.comments} comments</span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {post.content}
