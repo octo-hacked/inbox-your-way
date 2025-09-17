@@ -1,44 +1,49 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
+// 1. Updated User type to match your API response
 type User = {
   id: string;
   email: string;
-  name?: string;
+  username: string;
+  fullname: string;
+  avatar?: string;
+  coverImage?: string;
 };
 
 type AuthState = {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
-  accessTokenExpiresAt: number | null; // epoch ms
 };
 
 type AuthContextType = AuthState & {
   loading: boolean;
   signIn: (params: { email: string; password: string }) => Promise<void>;
-  signUp: (params: { email: string; password: string; name?: string }) => Promise<void>;
+  // Changed `name` to `fullname` to match your API
+  signUp: (params: { email: string; password: string; fullname: string }) => Promise<void>;
   signOut: () => void;
-  refresh: () => Promise<void>;
+  // The refresh function is kept for future implementation
+  // refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = "auth.state.v1";
+const STORAGE_KEY = "unicast.auth.state.v1";
 
 function loadFromStorage(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { user: null, accessToken: null, refreshToken: null, accessTokenExpiresAt: null };
+    if (!raw) return { user: null, accessToken: null, refreshToken: null };
     const parsed = JSON.parse(raw);
     return {
       user: parsed.user ?? null,
       accessToken: parsed.accessToken ?? null,
       refreshToken: parsed.refreshToken ?? null,
-      accessTokenExpiresAt: typeof parsed.accessTokenExpiresAt === "number" ? parsed.accessTokenExpiresAt : null,
     };
   } catch {
-    return { user: null, accessToken: null, refreshToken: null, accessTokenExpiresAt: null };
+    return { user: null, accessToken: null, refreshToken: null };
   }
 }
 
@@ -46,30 +51,10 @@ function saveToStorage(state: AuthState) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-async function tryFetch(input: RequestInfo, init?: RequestInit) {
-  try {
-    const res = await fetch(input, init);
-    return res;
-  } catch {
-    return new Response(null, { status: 0, statusText: "network-error" });
-  }
-}
-
-function now() {
-  return Date.now();
-}
-
-function genLocalToken(prefix: string) {
-  const rand = self.crypto?.getRandomValues?.(new Uint8Array(16)) ?? new Uint8Array(16);
-  const hex = Array.from(rand).map((b) => b.toString(16).padStart(2, "0")).join("");
-  return `${prefix}.${hex}`;
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const [state, setState] = useState<AuthState>(() => loadFromStorage());
   const [loading, setLoading] = useState(false);
-  const refreshTimer = useRef<number | null>(null);
 
   const persist = useCallback((next: AuthState) => {
     setState(next);
@@ -77,146 +62,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(() => {
-    if (refreshTimer.current) window.clearTimeout(refreshTimer.current);
-    persist({ user: null, accessToken: null, refreshToken: null, accessTokenExpiresAt: null });
+    persist({ user: null, accessToken: null, refreshToken: null });
   }, [persist]);
 
-  const signIn = useCallback(async ({ email, password }: { email: string; password: string }) => {
-    setLoading(true);
-    const res = await tryFetch("/api/auth/signin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+  const signIn = useCallback(
+    async ({ email, password }: { email: string; password: string }) => {
+      setLoading(true);
+      try {
+        const res = await axios.post("http://localhost:3000/api/v1/users/login", { email, password });
 
-    if (res.ok) {
-      const data = await res.json();
-      const expiresInSec = Number(data.expiresIn ?? 1800);
-      const next: AuthState = {
-        user: data.user ?? { id: data.user?.id ?? "user", email: data.user?.email ?? email },
-        accessToken: data.accessToken ?? null,
-        refreshToken: data.refreshToken ?? null,
-        accessTokenExpiresAt: now() + expiresInSec * 1000,
-      };
-      persist(next);
-      setLoading(false);
-      scheduleRefresh(expiresInSec);
-      return;
-    }
+        if (res.data.success) {
+          // 2. Destructure the response according to your API structure
+          const { user, accessToken, refreshToken } = res.data.data;
 
-    // Dev fallback if no backend: create local tokens to enable gated UI flows
-    const devAccess = genLocalToken("access");
-    const devRefresh = genLocalToken("refresh");
-    const expiresInSec = 1800;
-    persist({
-      user: { id: "local-user", email },
-      accessToken: devAccess,
-      refreshToken: devRefresh,
-      accessTokenExpiresAt: now() + expiresInSec * 1000,
-    });
-    scheduleRefresh(expiresInSec);
-    setLoading(false);
-    toast({ title: "Signed in (local)", description: "No auth backend detected, using local session." });
-  }, [persist, toast]);
+          // Map API response to our User type
+          const formattedUser: User = {
+            id: user._id,
+            email: user.email,
+            username: user.username,
+            fullname: user.fullname,
+            avatar: user.avatar,
+            coverImage: user.coverImage,
+          };
 
-  const signUp = useCallback(async ({ email, password, name }: { email: string; password: string; name?: string }) => {
-    setLoading(true);
-    const res = await tryFetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
-    });
-
-    if (res.ok) {
-      // After signup, try to sign in automatically
-      setLoading(false);
-      await signIn({ email, password });
-      return;
-    }
-
-    // Dev fallback: directly create local session
-    const devAccess = genLocalToken("access");
-    const devRefresh = genLocalToken("refresh");
-    const expiresInSec = 1800;
-    persist({
-      user: { id: "local-user", email, name },
-      accessToken: devAccess,
-      refreshToken: devRefresh,
-      accessTokenExpiresAt: now() + expiresInSec * 1000,
-    });
-    scheduleRefresh(expiresInSec);
-    setLoading(false);
-    toast({ title: "Account created (local)", description: "No auth backend detected, using local session." });
-  }, [persist, signIn, toast]);
-
-  const refresh = useCallback(async () => {
-    if (!state.refreshToken) {
-      signOut();
-      return;
-    }
-    const res = await tryFetch("/api/auth/refresh", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: state.refreshToken }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const expiresInSec = Number(data.expiresIn ?? 1800);
-      persist({
-        user: state.user,
-        accessToken: data.accessToken ?? state.accessToken,
-        refreshToken: data.refreshToken ?? state.refreshToken,
-        accessTokenExpiresAt: now() + expiresInSec * 1000,
-      });
-      scheduleRefresh(expiresInSec);
-      return;
-    }
-    // Dev fallback: extend local tokens
-    const expiresInSec = 1800;
-    persist({
-      user: state.user,
-      accessToken: state.accessToken ?? genLocalToken("access"),
-      refreshToken: state.refreshToken ?? genLocalToken("refresh"),
-      accessTokenExpiresAt: now() + expiresInSec * 1000,
-    });
-    scheduleRefresh(expiresInSec);
-  }, [persist, signOut, state]);
-
-  const scheduleRefresh = useCallback((expiresInSec: number) => {
-    if (refreshTimer.current) window.clearTimeout(refreshTimer.current);
-    const offset = Math.max(10, Math.floor(expiresInSec * 0.8)); // refresh at 80% of lifetime
-    refreshTimer.current = window.setTimeout(() => {
-      refresh();
-    }, offset * 1000) as unknown as number;
-  }, [refresh]);
-
-  // Rehydrate and schedule refresh on mount
-  useEffect(() => {
-    if (state.accessToken && state.accessTokenExpiresAt) {
-      const remainingMs = state.accessTokenExpiresAt - now();
-      if (remainingMs > 0) {
-        scheduleRefresh(Math.floor(remainingMs / 1000));
-      } else {
-        refresh();
+          persist({ user: formattedUser, accessToken, refreshToken });
+          toast({ title: "Login Successful", description: "Welcome back!" });
+        }
+      } catch (error: any) {
+        console.error("Sign in failed:", error);
+        toast({
+          title: "Login Failed",
+          description: error.response?.data?.message || "An unexpected error occurred.",
+          variant: "destructive",
+        });
+        signOut(); // Clear any partial state
+      } finally {
+        setLoading(false);
       }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    },
+    [persist, signOut, toast]
+  );
 
-  const value: AuthContextType = useMemo(() => ({
-    ...state,
-    loading,
-    signIn,
-    signUp,
-    signOut,
-    refresh,
-  }), [state, loading, signIn, signUp, signOut, refresh]);
+  const signUp = useCallback(
+    async ({ email, password, fullname }: { email: string; password: string; fullname: string }) => {
+      setLoading(true);
+      try {
+        // 3. Pass `fullname` to match the updated function signature
+        const res = await axios.post("http://localhost:3000/api/v1/users/register", {
+          email,
+          password,
+          fullname,
+        });
+
+        if (res.data.success) {
+          toast({ title: "Registration Successful", description: "Please log in to continue." });
+          // After a successful signup, you can automatically sign the user in
+          await signIn({ email, password });
+        }
+      } catch (error: any) {
+        console.error("Sign up failed:", error);
+        toast({
+          title: "Registration Failed",
+          description: error.response?.data?.message || "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [signIn, toast]
+  );
+
+  const value: AuthContextType = useMemo(
+    () => ({
+      ...state,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+    }),
+    [state, loading, signIn, signUp, signOut]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
 }
