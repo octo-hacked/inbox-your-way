@@ -22,7 +22,7 @@ type AuthContextType = AuthState & {
   loading: boolean;
   signIn: (params: { email: string; password: string }) => Promise<void>;
   // Changed `name` to `fullname` to match your API
-  signUp: (params: { email: string; password: string; fullname: string }) => Promise<void>;
+  signUp: (params: { email: string; password: string; fullname: string; username: string }) => Promise<void>;
   signOut: () => Promise<void>;
   // The refresh function is kept for future implementation
   // refresh: () => Promise<void>;
@@ -121,19 +121,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signUp = useCallback(
-    async ({ email, password, fullname }: { email: string; password: string; fullname: string }) => {
+    async ({ email, password, fullname, username }: { email: string; password: string; fullname: string; username: string }) => {
       setLoading(true);
       try {
-        // 3. Pass `fullname` to match the updated function signature
         const res = await axios.post("http://localhost:3000/api/v1/users/register", {
           email,
           password,
           fullname,
+          username,
         });
 
         if (res.data.success) {
           toast({ title: "Registration Successful", description: "Please log in to continue." });
-          // After a successful signup, you can automatically sign the user in
           await signIn({ email, password });
         }
       } catch (error: any) {
