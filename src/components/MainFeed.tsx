@@ -166,7 +166,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
               {/* Post Header */}
               <div className="p-3 md:p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover" />
+                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-full rounded-full object-cover" />
                   <div>
                     <div className="flex items-center gap-1">
                       <span className="text-sm font-medium text-foreground">{post.username}</span>
