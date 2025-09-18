@@ -385,12 +385,64 @@ const Messages = () => {
                       <TabsTrigger value="group">Group</TabsTrigger>
                     </TabsList>
                     <TabsContent value="direct">
-                      <div className="grid gap-2">
-                        <Label htmlFor="userId">User ID</Label>
-                        <Input id="userId" placeholder="Enter user ID" value={directUserId} onChange={(e) => setDirectUserId(e.target.value)} />
+                      <div className="grid gap-3">
+                        <Label htmlFor="userSearch">Search users</Label>
+                        <Input
+                          id="userSearch"
+                          placeholder="Type a name or @username"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchLoading && (
+                          <div className="text-sm text-muted-foreground">Searching...</div>
+                        )}
+                        {searchQuery.trim() ? (
+                          <div className="space-y-2">
+                            <h3 className="text-sm font-medium text-foreground">Search Results</h3>
+                            <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                              {searchResults.map((u) => (
+                                <button
+                                  key={u._id}
+                                  onClick={() => handleUserSelect(u)}
+                                  className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                                >
+                                  <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                                  <div>
+                                    <div className="text-sm text-foreground">{u.fullname}</div>
+                                    <div className="text-xs text-muted-foreground">@{u.username}</div>
+                                  </div>
+                                </button>
+                              ))}
+                              {searchResults.length === 0 && !searchLoading && (
+                                <div className="text-sm text-muted-foreground">No users found.</div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <h3 className="text-sm font-medium text-foreground">Suggestions</h3>
+                            <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                              {suggestions.map((u) => (
+                                <button
+                                  key={u._id}
+                                  onClick={() => handleUserSelect(u)}
+                                  className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                                >
+                                  <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                                  <div>
+                                    <div className="text-sm text-foreground">{u.fullname}</div>
+                                    <div className="text-xs text-muted-foreground">@{u.username}</div>
+                                  </div>
+                                </button>
+                              ))}
+                              {suggestions.length === 0 && (
+                                <div className="text-sm text-muted-foreground">No suggestions available.</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         <div className="flex justify-end gap-2 mt-2">
-                          <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                          <Button onClick={handleCreateDirect} disabled={!directUserId.trim()}>Create</Button>
+                          <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Close</Button>
                         </div>
                       </div>
                     </TabsContent>
