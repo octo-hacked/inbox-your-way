@@ -12,11 +12,12 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signUp({ email, password, name });
+    await signUp({ email, password, fullname: name, username });
     navigate("/", { replace: true });
   };
 
@@ -33,8 +34,12 @@ export default function SignUp() {
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+              <Label htmlFor="name">Full name</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a unique username" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

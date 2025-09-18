@@ -1,8 +1,9 @@
-import { Home, MessageCircle, Bell, BookOpen, Sliders } from "lucide-react";
+import { Home, MessageCircle, Bell, BookOpen, Sliders, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Drawer } from "vaul";
 import type { Category } from "@/components/MainFeed";
 import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/context/AuthContext";
 
 type BottomBarProps = {
   monochrome: boolean;
@@ -22,6 +23,7 @@ const contentFilters: { key: Category; label: string }[] = [
 
 const BottomBar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggleCategory, onSelectAllCategories, lowDopamineOnly, onToggleLowDopamine }: BottomBarProps) => {
   const location = useLocation();
+  const { signOut, loading } = useAuth();
 
   const NavLink = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => (
     <Link to={to} className={`flex flex-col items-center justify-center flex-1 py-2 ${location.pathname === to ? "text-accent" : "text-foreground"}`}>
@@ -52,6 +54,10 @@ const BottomBar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggl
                   <div className="mx-auto h-1 w-12 rounded-full bg-muted mb-4" />
                   <h3 className="text-base font-semibold mb-3 text-foreground">Settings</h3>
                   <div className="space-y-4">
+                    <button onClick={() => signOut()} disabled={loading} className="w-full flex items-center gap-2 px-3 py-2 rounded bg-input text-foreground disabled:opacity-60">
+                      <LogOut className="w-4 h-4" />
+                      <span className="text-sm">Log out</span>
+                    </button>
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-foreground">Content Filter</span>
