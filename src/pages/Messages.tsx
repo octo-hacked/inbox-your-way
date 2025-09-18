@@ -68,12 +68,11 @@ const Messages = () => {
 
   // Initialize chat system
   useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-    if (token && user) {
-      initializeSocket(token);
+    if (accessToken && user) {
+      initializeSocket(accessToken);
       fetchChats();
     }
-  }, [user, initializeSocket, fetchChats]);
+  }, [user, accessToken, initializeSocket, fetchChats]);
 
   // Helper functions
   const getChatDisplayName = (chat: any) => {
