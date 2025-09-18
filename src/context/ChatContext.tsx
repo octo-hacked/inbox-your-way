@@ -365,7 +365,7 @@ export const ChatProvider: React.FC<{
       const response = await fetch(`${apiBaseUrl}/chat/direct/${userId}`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}` 
+          'Authorization': `Bearer ${user.authToken}` 
         },
       });
       
