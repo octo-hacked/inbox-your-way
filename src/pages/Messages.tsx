@@ -31,7 +31,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   // Create Chat dialog state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
