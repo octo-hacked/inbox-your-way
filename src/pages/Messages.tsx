@@ -1,8 +1,13 @@
 // ==================== UPDATED MESSAGES COMPONENT ====================
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Send, Paperclip, Smile, Phone, Video, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Paperclip, Smile, Phone, Video, MoreVertical, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import BottomBar from "@/components/BottomBar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,6 +32,13 @@ const Messages = () => {
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
+
+  // Create Chat dialog state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createTab, setCreateTab] = useState("direct");
+  const [directUserId, setDirectUserId] = useState("");
+  const [groupName, setGroupName] = useState("");
+  const [groupParticipants, setGroupParticipants] = useState("");
   
   // Get chat context
   const {
@@ -42,6 +54,8 @@ const Messages = () => {
     loading,
     onlineUsers,
     typingUsers,
+    createDirectChat,
+    createGroupChat,
   } = useChat();
 
   // Initialize chat system
@@ -167,6 +181,41 @@ const Messages = () => {
     setActiveChat(null);
   };
 
+  const handleCreateDirect = async () => {
+    const userId = directUserId.trim();
+    if (!userId) return;
+    try {
+      const chat = await createDirectChat(userId);
+      if (chat) {
+        setActiveChat(chat);
+        setIsCreateOpen(false);
+        setDirectUserId("");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCreateGroup = async () => {
+    const name = groupName.trim();
+    const participants = groupParticipants
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!name || participants.length === 0) return;
+    try {
+      const chat = await createGroupChat(name, participants);
+      if (chat) {
+        setActiveChat(chat);
+        setIsCreateOpen(false);
+        setGroupName("");
+        setGroupParticipants("");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Cleanup typing timeout
   useEffect(() => {
     return () => {
@@ -185,11 +234,55 @@ const Messages = () => {
         <div className="w-full md:w-80 bg-card border-r border-border flex flex-col">
           {/* Header */}
           <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
-            <div className="flex items-center gap-3">
-              <Link to="/" className="p-1 hover:bg-hover-bg rounded transition-colors md:hidden">
-                <ArrowLeft className="w-5 h-5 text-icon-color" />
-              </Link>
-              <h2 className="text-lg font-semibold text-foreground">Messages</h2>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Link to="/" className="p-1 hover:bg-hover-bg rounded transition-colors">
+                  <ArrowLeft className="w-5 h-5 text-icon-color" />
+                </Link>
+                <h2 className="text-lg font-semibold text-foreground">Messages</h2>
+              </div>
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="default">
+                    <Plus className="w-4 h-4" />
+                    Create
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>New Chat</DialogTitle>
+                    <DialogDescription>Create a direct message or a group chat.</DialogDescription>
+                  </DialogHeader>
+                  <Tabs value={createTab} onValueChange={setCreateTab}>
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="direct">Direct</TabsTrigger>
+                      <TabsTrigger value="group">Group</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="direct">
+                      <div className="grid gap-2">
+                        <Label htmlFor="userId">User ID</Label>
+                        <Input id="userId" placeholder="Enter user ID" value={directUserId} onChange={(e) => setDirectUserId(e.target.value)} />
+                        <div className="flex justify-end gap-2 mt-2">
+                          <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                          <Button onClick={handleCreateDirect} disabled={!directUserId.trim()}>Create</Button>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="group">
+                      <div className="grid gap-2">
+                        <Label htmlFor="groupName">Group name</Label>
+                        <Input id="groupName" placeholder="e.g., Weekend Plans" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
+                        <Label htmlFor="participants">Participants (comma-separated IDs)</Label>
+                        <Input id="participants" placeholder="id1, id2, id3" value={groupParticipants} onChange={(e) => setGroupParticipants(e.target.value)} />
+                        <div className="flex justify-end gap-2 mt-2">
+                          <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                          <Button onClick={handleCreateGroup} disabled={!groupName.trim() || groupParticipants.split(',').map(s => s.trim()).filter(Boolean).length === 0}>Create</Button>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
