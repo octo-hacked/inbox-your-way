@@ -39,7 +39,15 @@ const Messages = () => {
   const [directUserId, setDirectUserId] = useState("");
   const [groupName, setGroupName] = useState("");
   const [groupParticipants, setGroupParticipants] = useState("");
-  
+
+  // User search & suggestions state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  const API_BASE = "http://localhost:3000/api/v1";
+
   // Get chat context
   const {
     chats,
