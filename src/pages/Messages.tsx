@@ -1,10 +1,15 @@
-import { useState } from "react";
+// ==================== UPDATED MESSAGES COMPONENT ====================
+
+import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Send, Paperclip, Smile, Phone, Video, MoreVertical } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 import BottomBar from "@/components/BottomBar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Category } from "@/components/MainFeed";
+import { useChat } from "../context/ChatContext"; // You'll need to create this
+import { useAuth } from "@/context/AuthContext";
+import { formatDistanceToNow } from "date-fns";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
 
@@ -17,96 +22,166 @@ const Messages = () => {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(allCategories);
   const [lowDopamineOnly, setLowDopamineOnly] = useState(false);
 
-  // Start with no chat selected on mobile for a proper list-first UX
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  // Chat state
   const [newMessage, setNewMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { user } = useAuth();
+  
+  // Get chat context
+  const {
+    chats,
+    messages,
+    activeChat,
+    setActiveChat,
+    sendMessage,
+    fetchChats,
+    initializeSocket,
+    startTyping,
+    stopTyping,
+    loading,
+    onlineUsers,
+    typingUsers,
+  } = useChat();
 
-  const conversations = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      avatar: avatarFor("Sarah Chen"),
-      lastMessage: "Thanks for sharing that article!",
-      time: "2m",
-      unread: true,
-      online: true
-    },
-    {
-      id: 2,
-      name: "Alex Morgan",
-      avatar: avatarFor("Alex Morgan"),
-      lastMessage: "Let's catch up soon",
-      time: "1h",
-      unread: false,
-      online: true
-    },
-    {
-      id: 3,
-      name: "Jordan Kim",
-      avatar: avatarFor("Jordan Kim"),
-      lastMessage: "Great presentation today",
-      time: "3h",
-      unread: false,
-      online: false
-    },
-    {
-      id: 4,
-      name: "Emma Wilson",
-      avatar: avatarFor("Emma Wilson"),
-      lastMessage: "See you at the meeting",
-      time: "1d",
-      unread: true,
-      online: false
-    },
-    {
-      id: 5,
-      name: "Marcus Johnson",
-      avatar: avatarFor("Marcus Johnson"),
-      lastMessage: "The project looks amazing",
-      time: "2d",
-      unread: false,
-      online: true
-    },
-    {
-      id: 6,
-      name: "Lisa Zhang",
-      avatar: avatarFor("Lisa Zhang"),
-      lastMessage: "Can we schedule a call?",
-      time: "3d",
-      unread: false,
-      online: false
+  // Initialize chat system
+  useEffect(() => {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    if (token && user) {
+      initializeSocket(token);
+      fetchChats();
     }
-  ];
+  }, [user, initializeSocket, fetchChats]);
 
-  const messages: Record<number, { id: number; text: string; sender: "me" | "other"; time: string }[]> = {
-    1: [
-      { id: 1, text: "Hey! How are you doing?", sender: "other", time: "10:30 AM" },
-      { id: 2, text: "I'm doing great! Just finished reading that article you sent.", sender: "me", time: "10:32 AM" },
-      { id: 3, text: "Thanks for sharing that article!", sender: "other", time: "10:33 AM" },
-      { id: 4, text: "It really opened my eyes to the mindful tech movement.", sender: "other", time: "10:33 AM" },
-      { id: 5, text: "I'm so glad you found it helpful! That's exactly what we're trying to build here.", sender: "me", time: "10:35 AM" }
-    ],
-    2: [
-      { id: 1, text: "Hey Alex! It's been a while.", sender: "me", time: "Yesterday" },
-      { id: 2, text: "Let's catch up soon", sender: "other", time: "1h ago" }
-    ]
+  // Helper functions
+  const getChatDisplayName = (chat: any) => {
+    if (chat.isGroupChat) {
+      return chat.name;
+    }
+    const otherParticipant = chat.participants.find((p: any) => p._id !== user?.id);
+    return otherParticipant?.username || 'Unknown User';
   };
 
-  const currentChat = conversations.find(c => c.id === selectedChat!);
-  const currentMessages = selectedChat ? (messages[selectedChat] || []) : [];
+  const getChatAvatar = (chat: any) => {
+    if (chat.isGroupChat) {
+      return avatarFor(chat.name);
+    }
+    const otherParticipant = chat.participants.find((p: any) => p._id !== user?.id);
+    return otherParticipant?.avatar || avatarFor(otherParticipant?.username || 'unknown');
+  };
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      setNewMessage("");
+  const isUserOnline = (chat: any) => {
+    if (chat.isGroupChat) return false;
+    const otherParticipant = chat.participants.find((p: any) => p._id !== user?.id);
+    return otherParticipant && onlineUsers.has(otherParticipant._id);
+  };
+
+  const getLastMessagePreview = (chat: any) => {
+    if (!chat.lastMessage) return 'No messages yet';
+    const content = chat.lastMessage.content;
+    return content.length > 50 ? content.substring(0, 50) + '...' : content;
+  };
+
+  const getLastMessageTime = (chat: any) => {
+    if (!chat.lastMessage) return '';
+    return formatDistanceToNow(new Date(chat.lastMessage.createdAt), { addSuffix: true });
+  };
+
+  const hasUnreadMessages = (chat: any) => {
+    // You can implement unread logic here based on your requirements
+    return false; // Placeholder
+  };
+
+  const isSomeoneTyping = () => {
+    if (!activeChat) return false;
+    const currentChatTyping = typingUsers[activeChat._id] || {};
+    const typingUserIds = Object.keys(currentChatTyping).filter(userId => userId !== user?.id);
+    return typingUserIds.length > 0;
+  };
+
+  const getTypingText = () => {
+    if (!activeChat) return '';
+    const currentChatTyping = typingUsers[activeChat._id] || {};
+    const typingUserIds = Object.keys(currentChatTyping).filter(userId => userId !== user?.id);
+    
+    if (typingUserIds.length === 0) return '';
+    if (typingUserIds.length === 1) return 'Someone is typing...';
+    return 'Multiple people are typing...';
+  };
+
+  // Get current messages
+  const currentMessages = activeChat ? messages[activeChat._id] || [] : [];
+
+  // Handle message input
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    
+    if (!activeChat) return;
+
+    if (!isTyping) {
+      setIsTyping(true);
+      startTyping(activeChat._id);
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      stopTyping(activeChat._id);
+    }, 1000);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !activeChat) return;
+
+    const messageContent = newMessage.trim();
+    setNewMessage("");
+
+    // Stop typing immediately when sending
+    if (isTyping) {
+      setIsTyping(false);
+      stopTyping(activeChat._id);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    }
+
+    await sendMessage(activeChat._id, messageContent);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSendMessage();
     }
   };
 
-  const showListOnMobile = isMobile && selectedChat !== null;
+  const handleChatSelect = (chat: any) => {
+    setActiveChat(chat);
+  };
+
+  const handleBackToList = () => {
+    setActiveChat(null);
+  };
+
+  // Cleanup typing timeout
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const currentChat = activeChat;
 
   return (
     <div className={`flex h-screen bg-background ${monochrome ? "grayscale" : ""}`}>
       {/* Conversations List */}
-      {!(isMobile && selectedChat !== null) && (
+      {!(isMobile && currentChat !== null) && (
         <div className="w-full md:w-80 bg-card border-r border-border flex flex-col">
           {/* Header */}
           <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
@@ -121,68 +196,90 @@ const Messages = () => {
           {/* Conversations */}
           <ScrollArea className="flex-1 inbox-scroll">
             <div className="pb-16 md:pb-0">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setSelectedChat(conversation.id)}
-                  className={`p-4 border-b border-border hover:bg-hover-bg cursor-pointer transition-colors ${
-                    selectedChat === conversation.id ? 'bg-hover-bg' : ''
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="relative">
-                      <img src={conversation.avatar} alt={conversation.name} className="w-12 h-12 rounded-full object-cover" />
-                      {conversation.online && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                      )}
-                      {conversation.unread && (
-                        <div className="absolute -top-1 -left-1 w-3 h-3 bg-accent rounded-full"></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className={`text-sm ${conversation.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
-                          {conversation.name}
-                        </h3>
-                        <span className="text-xs text-muted-foreground">{conversation.time}</span>
+              {loading ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : chats.length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground">
+                  <p className="mb-2">No conversations yet</p>
+                  <p className="text-sm">Start a new chat to get started!</p>
+                </div>
+              ) : (
+                chats.map((chat: any) => (
+                  <div
+                    key={chat._id}
+                    onClick={() => handleChatSelect(chat)}
+                    className={`p-4 border-b border-border hover:bg-hover-bg cursor-pointer transition-colors ${
+                      currentChat?._id === chat._id ? 'bg-hover-bg' : ''
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative">
+                        <img 
+                          src={getChatAvatar(chat)} 
+                          alt={getChatDisplayName(chat)} 
+                          className="w-12 h-12 rounded-full object-cover" 
+                        />
+                        {isUserOnline(chat) && (
+                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                        )}
+                        {hasUnreadMessages(chat) && (
+                          <div className="absolute -top-1 -left-1 w-3 h-3 bg-accent rounded-full"></div>
+                        )}
                       </div>
-                      <p className={`text-sm truncate ${conversation.unread ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {conversation.lastMessage}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className={`text-sm ${hasUnreadMessages(chat) ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
+                            {getChatDisplayName(chat)}
+                          </h3>
+                          <span className="text-xs text-muted-foreground">
+                            {getLastMessageTime(chat)}
+                          </span>
+                        </div>
+                        <p className={`text-sm truncate ${hasUnreadMessages(chat) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {getLastMessagePreview(chat)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </ScrollArea>
         </div>
       )}
 
       {/* Chat Area */}
-      <div className={`flex-1 flex flex-col ${isMobile && selectedChat === null ? 'hidden' : ''}`}>
+      <div className={`flex-1 flex flex-col ${isMobile && currentChat === null ? 'hidden' : ''}`}>
         {currentChat ? (
           <>
-            {/* Mobile Chat Header */}
+            {/* Chat Header */}
             <div className="p-4 border-b border-border bg-card sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button
                     className="p-1 hover:bg-hover-bg rounded transition-colors md:hidden"
-                    onClick={() => setSelectedChat(null)}
+                    onClick={handleBackToList}
                     aria-label="Back to conversations"
                   >
                     <ArrowLeft className="w-5 h-5 text-icon-color" />
                   </button>
                   <div className="relative">
-                    <img src={currentChat.avatar} alt={currentChat.name} className="w-10 h-10 rounded-full object-cover" />
-                    {currentChat.online && (
+                    <img 
+                      src={getChatAvatar(currentChat)} 
+                      alt={getChatDisplayName(currentChat)} 
+                      className="w-10 h-10 rounded-full object-cover" 
+                    />
+                    {isUserOnline(currentChat) && (
                       <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-white rounded-full"></div>
                     )}
                   </div>
                   <div>
-                    <h3 className="font-medium text-foreground">{currentChat.name}</h3>
+                    <h3 className="font-medium text-foreground">{getChatDisplayName(currentChat)}</h3>
                     <p className="text-xs text-muted-foreground">
-                      {currentChat.online ? "Active now" : "Last seen 2h ago"}
+                      {isSomeoneTyping() ? getTypingText() : 
+                       isUserOnline(currentChat) ? "Active now" : "Last seen recently"}
                     </p>
                   </div>
                 </div>
@@ -203,27 +300,57 @@ const Messages = () => {
             {/* Messages */}
             <ScrollArea className="flex-1 main-feed-scroll">
               <div className="p-4 space-y-4 pb-20 md:pb-4">
-                {currentMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-[80%] md:max-w-xs rounded-lg p-3 ${
-                      message.sender === 'me'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-foreground'
-                    }`}>
-                      <p className="text-sm">{message.text}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.sender === 'me'
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground'
-                      }`}>
-                        {message.time}
-                      </p>
+                {currentMessages.length === 0 ? (
+                  <div className="flex items-center justify-center h-32 text-muted-foreground">
+                    <p>No messages yet. Start the conversation!</p>
+                  </div>
+                ) : (
+                  // Show messages in reverse order (newest at bottom)
+                  [...currentMessages].reverse().map((message: any) => {
+                    const isOwn = message.sender._id === user?.id;
+                    return (
+                      <div
+                        key={message._id}
+                        className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-[80%] md:max-w-xs rounded-lg p-3 ${
+                          isOwn
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-foreground'
+                        }`}>
+                          {!isOwn && currentChat.isGroupChat && (
+                            <p className="text-xs font-medium mb-1 opacity-75">
+                              {message.sender.username}
+                            </p>
+                          )}
+                          <p className="text-sm">{message.content}</p>
+                          <p className={`text-xs mt-1 ${
+                            isOwn
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground'
+                          }`}>
+                            {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+
+                {/* Typing Indicator */}
+                {isSomeoneTyping() && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted text-foreground rounded-lg p-3 max-w-xs">
+                      <div className="flex items-center space-x-1">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </ScrollArea>
 
@@ -238,8 +365,8 @@ const Messages = () => {
                     type="text"
                     placeholder="Type a message..."
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyPress}
                     className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <button className="p-1 hover:bg-hover-bg rounded transition-colors">
@@ -248,7 +375,8 @@ const Messages = () => {
                 </div>
                 <button
                   onClick={handleSendMessage}
-                  className="p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  disabled={!newMessage.trim()}
+                  className="p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -258,7 +386,9 @@ const Messages = () => {
         ) : (
           <div className="flex-1 hidden md:flex items-center justify-center">
             <div className="text-center">
-              <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4"></div>
+              <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Send className="w-8 h-8 text-muted-foreground" />
+              </div>
               <h3 className="text-lg font-medium text-foreground mb-2">Select a conversation</h3>
               <p className="text-muted-foreground">Choose a chat to start messaging</p>
             </div>
