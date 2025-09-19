@@ -386,7 +386,7 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
             )}
 
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
               <Button disabled={!canContinueStep2} onClick={() => setStep(2)}>Next</Button>
             </div>
           </div>
