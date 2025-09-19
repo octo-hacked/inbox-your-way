@@ -13,6 +13,7 @@ import SignUp from "./pages/SignUp";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
+import Profile from "./pages/Profile";
 
 
 const queryClient = new QueryClient();
