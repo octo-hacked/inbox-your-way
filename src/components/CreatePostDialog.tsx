@@ -367,8 +367,8 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="media" className="text-sm">Upload image or video</Label>
-              <Input id="media" type="file" accept="image/*,video/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              <Label className="text-sm">Upload image or video</Label>
+              <FileDropZone onSelect={(f) => setFile(f)} />
             </div>
 
             {fileUrl && (
