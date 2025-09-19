@@ -69,7 +69,7 @@ const Messages = () => {
   // Initialize chat system
   useEffect(() => {
     if (accessToken && user) {
-      initializeSocket(user.accessToken);
+      initializeSocket(accessToken);
       fetchChats();
     }
   }, [user, accessToken, initializeSocket, fetchChats]);
