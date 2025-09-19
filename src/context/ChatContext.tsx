@@ -205,9 +205,9 @@ export const ChatProvider: React.FC<{
   children: ReactNode; 
   apiBaseUrl?: string; 
   
-}> = ({ children, apiBaseUrl = '/api' }) => {
+}> = ({ children, apiBaseUrl = 'http://localhost:3000/api/v1' }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
-  const { user } = useAuth(); // Use your existing auth context
+  const { user,accessToken } = useAuth(); // Use your existing auth context
   
 
   // Initialize socket connection
@@ -278,7 +278,7 @@ export const ChatProvider: React.FC<{
   const fetchChats = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      const response = await fetch(`${apiBaseUrl}/chat`, {
+      const response = await fetch(`${apiBaseUrl}/chats`, {
         headers: { 
           'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}` 
         },
@@ -365,7 +365,7 @@ export const ChatProvider: React.FC<{
       const response = await fetch(`${apiBaseUrl}/chat/direct/${userId}`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}` 
+          'Authorization': `Bearer ${user.authToken}` 
         },
       });
       

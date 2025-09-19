@@ -31,7 +31,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   // Create Chat dialog state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -39,7 +39,15 @@ const Messages = () => {
   const [directUserId, setDirectUserId] = useState("");
   const [groupName, setGroupName] = useState("");
   const [groupParticipants, setGroupParticipants] = useState("");
-  
+
+  // User search & suggestions state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  const API_BASE = "http://localhost:3000/api/v1";
+
   // Get chat context
   const {
     chats,
@@ -60,12 +68,11 @@ const Messages = () => {
 
   // Initialize chat system
   useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-    if (token && user) {
-      initializeSocket(token);
+    if (accessToken && user) {
+      initializeSocket(accessToken);
       fetchChats();
     }
-  }, [user, initializeSocket, fetchChats]);
+  }, [user, accessToken, initializeSocket, fetchChats]);
 
   // Helper functions
   const getChatDisplayName = (chat: any) => {
@@ -182,6 +189,7 @@ const Messages = () => {
   };
 
   const handleCreateDirect = async () => {
+    
     const userId = directUserId.trim();
     if (!userId) return;
     try {
@@ -213,6 +221,126 @@ const Messages = () => {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  // API helpers for search/suggestions and creating direct chat using v1 routes
+  const searchUsers = async (query: string, page = 1) => {
+    try {
+      const response = await fetch(`${API_BASE}/users/search?q=${encodeURIComponent(query)}&page=${page}&limit=20`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return { users: data.data.users as any[], pagination: data.data.pagination };
+      }
+      throw new Error(data.message || 'Search failed');
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw error;
+    }
+  };
+
+  const getUserSuggestions = async () => {
+    console.log(accessToken)
+    try {
+      const response = await fetch(`${API_BASE}/users/suggestions?limit=10`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return data.data as any[];
+      }
+      throw new Error(data.message || 'Suggestion fetch failed');
+    } catch (error) {
+      console.error('Error getting user suggestions:', error);
+      throw error;
+    }
+  };
+
+  const createChatWithUser = async (userId: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/chats/direct/${userId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return data.data;
+      }
+      throw new Error(data.message || 'Failed to create chat');
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      throw error;
+    }
+  };
+
+  function debounce<T extends (...args: any[]) => void>(fn: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    return function(this: any, ...args: Parameters<T>) {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        timeout = null;
+        fn.apply(this, args);
+      }, wait);
+    } as T;
+  }
+
+  const debouncedSearch = useRef(
+    debounce(async (query: string) => {
+      const trimmed = query.trim();
+      if (!trimmed) {
+        setSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      try {
+        const { users } = await searchUsers(trimmed);
+        setSearchResults(users);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300)
+  ).current;
+
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+  }, [searchQuery, debouncedSearch]);
+
+  useEffect(() => {
+    getUserSuggestions()
+      .then(setSuggestions)
+      .catch(() => setSuggestions([]));
+  }, []);
+
+  const handleUserSelect = async (u: any) => {
+    try {
+      const chat = await createChatWithUser(u._id);
+      await fetchChats();
+      if (chat) {
+        setActiveChat(chat);
+        setIsCreateOpen(false);
+        setSearchQuery('');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Failed to create chat:', error);
     }
   };
 
@@ -259,12 +387,64 @@ const Messages = () => {
                       <TabsTrigger value="group">Group</TabsTrigger>
                     </TabsList>
                     <TabsContent value="direct">
-                      <div className="grid gap-2">
-                        <Label htmlFor="userId">User ID</Label>
-                        <Input id="userId" placeholder="Enter user ID" value={directUserId} onChange={(e) => setDirectUserId(e.target.value)} />
+                      <div className="grid gap-3">
+                        <Label htmlFor="userSearch">Search users</Label>
+                        <Input
+                          id="userSearch"
+                          placeholder="Type a name or @username"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchLoading && (
+                          <div className="text-sm text-muted-foreground">Searching...</div>
+                        )}
+                        {searchQuery.trim() ? (
+                          <div className="space-y-2">
+                            <h3 className="text-sm font-medium text-foreground">Search Results</h3>
+                            <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                              {searchResults.map((u) => (
+                                <button
+                                  key={u._id}
+                                  onClick={() => handleUserSelect(u)}
+                                  className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                                >
+                                  <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                                  <div>
+                                    <div className="text-sm text-foreground">{u.fullname}</div>
+                                    <div className="text-xs text-muted-foreground">@{u.username}</div>
+                                  </div>
+                                </button>
+                              ))}
+                              {searchResults.length === 0 && !searchLoading && (
+                                <div className="text-sm text-muted-foreground">No users found.</div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <h3 className="text-sm font-medium text-foreground">Suggestions</h3>
+                            <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                              {suggestions.map((u) => (
+                                <button
+                                  key={u._id}
+                                  onClick={() => handleUserSelect(u)}
+                                  className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                                >
+                                  <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                                  <div>
+                                    <div className="text-sm text-foreground">{u.fullname}</div>
+                                    <div className="text-xs text-muted-foreground">@{u.username}</div>
+                                  </div>
+                                </button>
+                              ))}
+                              {suggestions.length === 0 && (
+                                <div className="text-sm text-muted-foreground">No suggestions available.</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         <div className="flex justify-end gap-2 mt-2">
-                          <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                          <Button onClick={handleCreateDirect} disabled={!directUserId.trim()}>Create</Button>
+                          <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Close</Button>
                         </div>
                       </div>
                     </TabsContent>
