@@ -243,6 +243,48 @@ function ReelAutoFitPreview({ fileUrl, mediaType }: { fileUrl: string; mediaType
   );
 }
 
+function Steps({ step }: { step: 1 | 2 | 3 | 4 }) {
+  const items = ["Type", "Adjust", "Details", "Review"] as const;
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      {items.map((label, idx) => {
+        const i = (idx + 1) as 1 | 2 | 3 | 4;
+        const active = i <= step;
+        return (
+          <div key={label} className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full grid place-items-center text-[10px] ${active ? "bg-accent text-accent-foreground" : "bg-muted"}`}>{idx + 1}</div>
+            <span className={`${active ? "text-foreground" : ""} hidden sm:inline`}>{label}</span>
+            {idx < items.length - 1 && <div className={`w-8 h-px ${active && i !== step ? "bg-accent" : "bg-border"}`} />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FileDropZone({ onSelect }: { onSelect: (file: File) => void }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) onSelect(f); }}
+      className={`group relative rounded-lg border ${dragOver ? "border-accent bg-accent/10" : "border-dashed border-border"} p-6 cursor-pointer transition-colors`}
+    >
+      <div className="flex flex-col items-center gap-2 text-center">
+        <div className="w-12 h-12 rounded-full bg-muted grid place-items-center">
+          <Upload className="w-6 h-6 text-foreground" />
+        </div>
+        <div className="text-sm font-medium">Click to upload</div>
+        <div className="text-xs text-muted-foreground">or drag and drop an image or video</div>
+      </div>
+      <input ref={inputRef} type="file" accept="image/*,video/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onSelect(f); }} />
+    </div>
+  );
+}
+
 export default function CreatePostDialog({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
