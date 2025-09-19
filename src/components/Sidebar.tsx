@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Category } from "@/components/MainFeed";
 import { useAuth } from "@/context/AuthContext";
+import CreatePostDialog from "@/components/CreatePostDialog";
 
 type SidebarProps = {
   monochrome: boolean;
