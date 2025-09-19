@@ -207,7 +207,7 @@ export const ChatProvider: React.FC<{
   
 }> = ({ children, apiBaseUrl = '/api' }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
-  const { user } = useAuth(); // Use your existing auth context
+  const { user,accessToken } = useAuth(); // Use your existing auth context
   
 
   // Initialize socket connection
