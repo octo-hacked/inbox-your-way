@@ -189,6 +189,7 @@ const Messages = () => {
   };
 
   const handleCreateDirect = async () => {
+    console.log(user)
     const userId = directUserId.trim();
     if (!userId) return;
     try {
