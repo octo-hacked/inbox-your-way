@@ -12,7 +12,7 @@ import { ImageIcon, PlaySquare, Upload } from "lucide-react";
 // Allowed post types
 export type PostType = "normal" | "reel";
 
-// Simple pan + zoom cropper for images and videos (preview-only). Outputs canvas for images; for videos it previews positioning only.
+// High-performance pan/zoom cropper using rAF for smoothness
 function PanZoomCropper({
   fileUrl,
   mediaType,
@@ -22,46 +22,85 @@ function PanZoomCropper({
 }: {
   fileUrl: string;
   mediaType: "image" | "video";
-  targetRatio?: number; // width/height
+  targetRatio?: number;
   onConfirm: (data: { previewUrl: string; meta: { scale: number; offsetX: number; offsetY: number; ratio: number } }) => void;
   onCancel: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
+  const scaleRef = useRef(1);
   const [scale, setScale] = useState(1);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const dragRef = useRef<{ dx: number; dy: number; startX: number; startY: number } | null>(null);
+  const posRef = useRef({ x: 0, y: 0 });
+  const dragRef = useRef<{ startX: number; startY: number; startPos: { x: number; y: number } } | null>(null);
+  const rafRef = useRef<number | null>(null);
 
-  // Setup drag handlers
-  useEffect(() => {
-    const el = containerRef.current;
+  const applyTransform = () => {
+    const el = mediaRef.current as HTMLElement | null;
     if (!el) return;
+    el.style.transform = `translate(-50%, -50%) translate(${posRef.current.x}px, ${posRef.current.y}px) scale(${scaleRef.current})`;
+  };
+  const schedule = () => {
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      applyTransform();
+    });
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
     const onPointerDown = (e: PointerEvent) => {
-      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-      dragRef.current = { dx: pos.x, dy: pos.y, startX: e.clientX, startY: e.clientY };
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      dragRef.current = { startX: e.clientX, startY: e.clientY, startPos: { ...posRef.current } };
     };
     const onPointerMove = (e: PointerEvent) => {
       if (!dragRef.current) return;
-      const { dx, dy, startX, startY } = dragRef.current;
-      setPos({ x: dx + (e.clientX - startX), y: dy + (e.clientY - startY) });
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+      posRef.current = { x: dragRef.current.startPos.x + dx, y: dragRef.current.startPos.y + dy };
+      schedule();
     };
     const onPointerUp = () => {
       dragRef.current = null;
     };
-    el.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    return () => {
-      el.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = -e.deltaY;
+      const next = Math.min(4, Math.max(1, scaleRef.current * (1 + delta / 800)));
+      scaleRef.current = next;
+      setScale(next);
+      schedule();
     };
-  }, [pos.x, pos.y]);
+
+    container.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
+    container.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      container.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove as any);
+      window.removeEventListener("pointerup", onPointerUp as any);
+      container.removeEventListener("wheel", onWheel as any);
+    };
+  }, []);
+
+  useEffect(() => {
+    scaleRef.current = scale;
+    schedule();
+  }, [scale]);
+
+  const resetView = () => {
+    posRef.current = { x: 0, y: 0 };
+    scaleRef.current = 1;
+    setScale(1);
+    schedule();
+  };
 
   const doConfirm = async () => {
-    // For images, render to canvas at required ratio; for videos, just return current transform as metadata and snapshot a poster frame
     const ratio = targetRatio;
-    const size = 1080; // export size for square; height will be size/ratio
+    const size = 1080;
     const outW = Math.round(size);
     const outH = Math.round(size / ratio);
 
@@ -79,80 +118,56 @@ function PanZoomCropper({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Compute how the image is currently transformed inside the container: scale and offset
       const naturalW = img.naturalWidth;
       const naturalH = img.naturalHeight;
       const container = containerRef.current;
       if (!container) return;
-      // Assume the media was initially sized to cover the container's smaller dimension, then scaled by `scale` and translated by pos
-      const containerRect = container.getBoundingClientRect();
-      const containerW = containerRect.width;
-      const containerH = containerRect.height;
-      // Determine base scale to cover container
+      const { width: containerW, height: containerH } = container.getBoundingClientRect();
       const coverScale = Math.max(containerW / naturalW, containerH / naturalH);
-      const totalScale = coverScale * scale;
-
-      // Map output canvas pixels to image pixels by inverting transform
-      // For each output pixel, find corresponding source pixel coordinate
-      // Equivalent to drawing image at transformed position on a virtual container of size containerW x containerH, then sampling the crop area equal to container
-      // We can compute the top-left of the image in container space, then the crop area is container itself
+      const totalScale = coverScale * scaleRef.current;
       const imgDisplayW = naturalW * totalScale;
       const imgDisplayH = naturalH * totalScale;
-      const imgLeft = (containerW - imgDisplayW) / 2 + pos.x;
-      const imgTop = (containerH - imgDisplayH) / 2 + pos.y;
-
-      // The output canvas corresponds to the entire container area scaled to outW x outH. So compute source rect in image pixels for that area.
-      const scaleToCanvasX = naturalW * totalScale / imgDisplayW; // equals naturalW/imgDisplayW
-      const scaleToCanvasY = naturalH * totalScale / imgDisplayH; // equals naturalH/imgDisplayH
-
-      // Source rect top-left in image pixels corresponding to container's top-left
+      const imgLeft = (containerW - imgDisplayW) / 2 + posRef.current.x;
+      const imgTop = (containerH - imgDisplayH) / 2 + posRef.current.y;
       const srcX = Math.max(0, (0 - imgLeft) * (naturalW / imgDisplayW));
       const srcY = Math.max(0, (0 - imgTop) * (naturalH / imgDisplayH));
       const srcW = Math.min(naturalW - srcX, containerW * (naturalW / imgDisplayW));
       const srcH = Math.min(naturalH - srcY, containerH * (naturalH / imgDisplayH));
-
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
       const url = canvas.toDataURL("image/jpeg", 0.92);
-      onConfirm({ previewUrl: url, meta: { scale, offsetX: pos.x, offsetY: pos.y, ratio } });
+      onConfirm({ previewUrl: url, meta: { scale: scaleRef.current, offsetX: posRef.current.x, offsetY: posRef.current.y, ratio } });
       return;
     }
 
-    // video: try to capture a frame for preview
     const video = document.createElement("video");
     video.src = fileUrl;
     await new Promise((res) => {
       video.onloadeddata = () => res(null);
-      // fallback timeout
-      setTimeout(res, 800);
+      setTimeout(res, 500);
     });
     const canvas = document.createElement("canvas");
     canvas.width = outW;
     canvas.height = outH;
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      // Draw a black background first
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, outW, outH);
     }
     const container = containerRef.current;
     if (!ctx || !container) {
-      onConfirm({ previewUrl: fileUrl, meta: { scale, offsetX: pos.x, offsetY: pos.y, ratio } });
+      onConfirm({ previewUrl: fileUrl, meta: { scale: scaleRef.current, offsetX: posRef.current.x, offsetY: posRef.current.y, ratio } });
       return;
     }
-    const containerRect = container.getBoundingClientRect();
-    const containerW = containerRect.width;
-    const containerH = containerRect.height;
-
-    // Assume cover behavior similar to image path
+    const { width: containerW, height: containerH } = container.getBoundingClientRect();
     const videoW = video.videoWidth || containerW;
     const videoH = video.videoHeight || containerH;
     const coverScale = Math.max(containerW / videoW, containerH / videoH);
-    const totalScale = coverScale * scale;
+    const totalScale = coverScale * scaleRef.current;
     const dispW = videoW * totalScale;
     const dispH = videoH * totalScale;
-    const imgLeft = (containerW - dispW) / 2 + pos.x;
-    const imgTop = (containerH - dispH) / 2 + pos.y;
+    const imgLeft = (containerW - dispW) / 2 + posRef.current.x;
+    const imgTop = (containerH - dispH) / 2 + posRef.current.y;
     const srcX = Math.max(0, (0 - imgLeft) * (videoW / dispW));
     const srcY = Math.max(0, (0 - imgTop) * (videoH / dispH));
     const srcW = Math.min(videoW - srcX, containerW * (videoW / dispW));
@@ -161,15 +176,15 @@ function PanZoomCropper({
     try {
       ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
       const url = canvas.toDataURL("image/jpeg", 0.9);
-      onConfirm({ previewUrl: url, meta: { scale, offsetX: pos.x, offsetY: pos.y, ratio } });
+      onConfirm({ previewUrl: url, meta: { scale: scaleRef.current, offsetX: posRef.current.x, offsetY: posRef.current.y, ratio } });
     } catch {
-      onConfirm({ previewUrl: fileUrl, meta: { scale, offsetX: pos.x, offsetY: pos.y, ratio } });
+      onConfirm({ previewUrl: fileUrl, meta: { scale: scaleRef.current, offsetX: posRef.current.x, offsetY: posRef.current.y, ratio } });
     }
   };
 
   return (
     <div className="space-y-3">
-      <div className="rounded-md overflow-hidden border border-border bg-black" ref={containerRef}>
+      <div className="rounded-lg overflow-hidden border border-border bg-black" ref={containerRef}>
         <AspectRatio ratio={targetRatio}>
           <div className="relative w-full h-full touch-pan-y select-none cursor-grab active:cursor-grabbing">
             {mediaType === "image" ? (
@@ -178,43 +193,32 @@ function PanZoomCropper({
                 src={fileUrl}
                 alt="To crop"
                 className="absolute left-1/2 top-1/2 will-change-transform"
-                style={{
-                  transform: `translate(-50%, -50%) translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
-                  transformOrigin: "center center",
-                  maxWidth: "none",
-                  maxHeight: "none",
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
+                style={{ transform: "translate(-50%, -50%) translate(0px, 0px) scale(1)", transformOrigin: "center" }}
+                draggable={false}
               />
             ) : (
               <video
                 ref={mediaRef as any}
                 src={fileUrl}
                 className="absolute left-1/2 top-1/2 will-change-transform"
-                style={{
-                  transform: `translate(-50%, -50%) translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
-                  transformOrigin: "center center",
-                  maxWidth: "none",
-                  maxHeight: "none",
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
+                style={{ transform: "translate(-50%, -50%) translate(0px, 0px) scale(1)", transformOrigin: "center" }}
                 controls
               />
             )}
           </div>
         </AspectRatio>
       </div>
-      <div className="px-1">
-        <Label className="text-xs text-muted-foreground">Zoom</Label>
-        <Slider value={[scale]} min={1} max={3} step={0.01} onValueChange={(v) => setScale(v[0] ?? 1)} />
+      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 px-1">
+        <div>
+          <Label className="text-xs text-muted-foreground">Zoom</Label>
+          <Slider value={[scale]} min={1} max={4} step={0.01} onValueChange={(v) => setScale(v[0] ?? 1)} />
+        </div>
+        <Button variant="outline" onClick={resetView}>Reset</Button>
+        <Button onClick={doConfirm}>Apply</Button>
       </div>
+      <p className="text-[11px] text-muted-foreground px-1">Tip: drag to pan, scroll to zoom.</p>
       <div className="flex gap-2 justify-end">
         <Button variant="ghost" onClick={onCancel}>Back</Button>
-        <Button onClick={doConfirm}>Apply</Button>
       </div>
     </div>
   );
