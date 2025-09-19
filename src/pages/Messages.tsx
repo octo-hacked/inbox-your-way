@@ -189,7 +189,7 @@ const Messages = () => {
   };
 
   const handleCreateDirect = async () => {
-    console.log(user)
+    
     const userId = directUserId.trim();
     if (!userId) return;
     try {
@@ -247,6 +247,7 @@ const Messages = () => {
   };
 
   const getUserSuggestions = async () => {
+    console.log(user)
     try {
       const response = await fetch(`${API_BASE}/users/suggestions?limit=10`, {
         method: 'GET',
