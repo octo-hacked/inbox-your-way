@@ -184,7 +184,7 @@ function PanZoomCropper({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg overflow-hidden border border-border bg-black" ref={containerRef}>
+      <div className="rounded-lg overflow-hidden border border-border bg-black mx-auto" ref={containerRef} style={{ maxWidth: "min(100%, 65vh)" }}>
         <AspectRatio ratio={targetRatio}>
           <div className="relative w-full h-full touch-pan-y select-none cursor-grab active:cursor-grabbing">
             {mediaType === "image" ? (
