@@ -1,9 +1,10 @@
-import { Home, MessageCircle, Bell, BookOpen, Settings, User, Filter, Sliders, LogOut } from "lucide-react";
+import { Home, MessageCircle, Bell, BookOpen, Settings, User, Filter, Sliders, LogOut, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Link, useLocation } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Category } from "@/components/MainFeed";
 import { useAuth } from "@/context/AuthContext";
+import CreatePostDialog from "@/components/CreatePostDialog";
 
 type SidebarProps = {
   monochrome: boolean;
@@ -156,14 +157,22 @@ const Sidebar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggleC
 
       {/* Bottom Navigation */}
       <div className="space-y-2 mt-auto">
+        <div className="w-full">
+          <CreatePostDialog>
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors">
+              <Upload className="w-5 h-5" />
+              <span className="hidden lg:inline">Create Post</span>
+            </button>
+          </CreatePostDialog>
+        </div>
         <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors">
           <Settings className="w-5 h-5" />
           <span className="hidden lg:inline">Settings</span>
         </button>
-        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors">
+        <Link to="/profile" className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${location.pathname === "/profile" ? "text-accent font-medium" : "text-foreground hover:bg-hover-bg"}`}>
           <User className="w-5 h-5" />
           <span className="hidden lg:inline">Profile</span>
-        </button>
+        </Link>
         <button onClick={() => signOut()} disabled={loading} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors disabled:opacity-60">
           <LogOut className="w-5 h-5" />
           <span className="hidden lg:inline">Log out</span>

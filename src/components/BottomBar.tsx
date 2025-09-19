@@ -1,9 +1,10 @@
-import { Home, MessageCircle, Bell, BookOpen, Sliders, LogOut } from "lucide-react";
+import { Home, MessageCircle, Bell, BookOpen, Sliders, LogOut, Upload } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Drawer } from "vaul";
 import type { Category } from "@/components/MainFeed";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
+import CreatePostDialog from "@/components/CreatePostDialog";
 
 type BottomBarProps = {
   monochrome: boolean;
@@ -40,6 +41,14 @@ const BottomBar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggl
           <NavLink to="/capsules" icon={BookOpen} label="Capsules" />
           <NavLink to="/messages" icon={MessageCircle} label="Messages" />
           <NavLink to="/notifications" icon={Bell} label="Alerts" />
+
+          {/* Create Post quick action */}
+          <CreatePostDialog>
+            <button className="flex flex-col items-center justify-center flex-1 py-2">
+              <Upload className="w-6 h-6" />
+              <span className="text-[10px] mt-0.5">Create</span>
+            </button>
+          </CreatePostDialog>
 
           <Drawer.Root>
             <Drawer.Trigger className="flex flex-col items-center justify-center flex-1 py-2">
