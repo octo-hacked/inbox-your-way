@@ -1,4 +1,4 @@
-import { Home, MessageCircle, Bell, BookOpen, Settings, User, Filter, Sliders, LogOut } from "lucide-react";
+import { Home, MessageCircle, Bell, BookOpen, Settings, User, Filter, Sliders, LogOut, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Link, useLocation } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
