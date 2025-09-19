@@ -164,7 +164,7 @@ const Sidebar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggleC
             return (
               <CreatePostDialog>
                 <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors">
-                  <UploadIcon className="w-5 h-5" />
+                  <Upload className="w-5 h-5" />
                   <span className="hidden lg:inline">Create Post</span>
                 </button>
               </CreatePostDialog>
