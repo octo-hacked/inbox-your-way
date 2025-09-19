@@ -169,10 +169,10 @@ const Sidebar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggleC
           <Settings className="w-5 h-5" />
           <span className="hidden lg:inline">Settings</span>
         </button>
-        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors">
+        <Link to="/profile" className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${location.pathname === "/profile" ? "text-accent font-medium" : "text-foreground hover:bg-hover-bg"}`}>
           <User className="w-5 h-5" />
           <span className="hidden lg:inline">Profile</span>
-        </button>
+        </Link>
         <button onClick={() => signOut()} disabled={loading} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-foreground hover:bg-hover-bg transition-colors disabled:opacity-60">
           <LogOut className="w-5 h-5" />
           <span className="hidden lg:inline">Log out</span>
