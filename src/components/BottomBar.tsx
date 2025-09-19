@@ -43,19 +43,12 @@ const BottomBar = ({ monochrome, onToggleMonochrome, selectedCategories, onToggl
           <NavLink to="/notifications" icon={Bell} label="Alerts" />
 
           {/* Create Post quick action */}
-          {/* eslint-disable-next-line @typescript-eslint/no-var-requires */}
-          {(() => {
-            const CreatePostDialog = require("@/components/CreatePostDialog").default as React.ComponentType<{ children?: React.ReactNode }>;
-            const Upload = require("lucide-react").Upload as React.ComponentType<{ className?: string }>;
-            return (
-              <CreatePostDialog>
-                <button className="flex flex-col items-center justify-center flex-1 py-2">
-                  <Upload className="w-6 h-6" />
-                  <span className="text-[10px] mt-0.5">Create</span>
-                </button>
-              </CreatePostDialog>
-            );
-          })()}
+          <CreatePostDialog>
+            <button className="flex flex-col items-center justify-center flex-1 py-2">
+              <Upload className="w-6 h-6" />
+              <span className="text-[10px] mt-0.5">Create</span>
+            </button>
+          </CreatePostDialog>
 
           <Drawer.Root>
             <Drawer.Trigger className="flex flex-col items-center justify-center flex-1 py-2">
