@@ -372,7 +372,7 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
             </div>
 
             {fileUrl && (
-              <div className="rounded-md overflow-hidden border border-border">
+              <div className="rounded-xl overflow-hidden border border-border shadow-sm">
                 <AspectRatio ratio={postType === "reel" ? 9 / 16 : 1}>
                   <div className="relative w-full h-full bg-black">
                     {mediaType === "image" ? (
