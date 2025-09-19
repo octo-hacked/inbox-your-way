@@ -247,7 +247,6 @@ const Messages = () => {
   };
 
   const getUserSuggestions = async () => {
-    console.log(accessToken)
     try {
       const response = await fetch(`${API_BASE}/users/suggestions?limit=10`, {
         method: 'GET',

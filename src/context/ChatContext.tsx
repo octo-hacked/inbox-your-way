@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { io, Socket,  } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 // Types
@@ -212,7 +212,7 @@ export const ChatProvider: React.FC<{
 
   // Initialize socket connection
   const initializeSocket = useCallback((token: string) => {
-    const socket = io(window.location.origin, {
+    const socket = io('http://localhost:3000', {
       auth: { token },
       withCredentials: true,
     });
@@ -272,7 +272,7 @@ export const ChatProvider: React.FC<{
     });
 
     return socket;
-  }, [state.chats]);
+  }, []);
 
   // API calls
   const fetchChats = useCallback(async () => {
@@ -280,7 +280,7 @@ export const ChatProvider: React.FC<{
     try {
       const response = await fetch(`${apiBaseUrl}/chats`, {
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}` 
+          'Authorization': `Bearer ${accessToken}` 
         },
       });
       
@@ -302,9 +302,9 @@ export const ChatProvider: React.FC<{
 
   const fetchMessages = useCallback(async (chatId: string) => {
     try {
-      const response = await fetch(`${apiBaseUrl}/chat/${chatId}/messages`, {
+      const response = await fetch(`${apiBaseUrl}/chats/${chatId}/messages`, {
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}` 
+          'Authorization': `Bearer ${accessToken}` 
         },
       });
       
@@ -324,11 +324,11 @@ export const ChatProvider: React.FC<{
 
   const sendMessage = useCallback(async (chatId: string, content: string): Promise<Message | undefined> => {
     try {
-      const response = await fetch(`${apiBaseUrl}/chat/${chatId}/messages`, {
+      const response = await fetch(`${apiBaseUrl}/chats/${chatId}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ content }),
       });
@@ -362,10 +362,10 @@ export const ChatProvider: React.FC<{
 
   const createDirectChat = useCallback(async (userId: string): Promise<Chat | undefined> => {
     try {
-      const response = await fetch(`${apiBaseUrl}/chat/direct/${userId}`, {
+      const response = await fetch(`${apiBaseUrl}/chats/direct/${userId}`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${user.authToken}` 
+          'Authorization': `Bearer ${accessToken}` 
         },
       });
       
@@ -389,11 +389,11 @@ export const ChatProvider: React.FC<{
 
   const createGroupChat = useCallback(async (name: string, participants: string[]): Promise<Chat | undefined> => {
     try {
-      const response = await fetch(`${apiBaseUrl}/chat/group`, {
+      const response = await fetch(`${apiBaseUrl}/chats/group`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ name, participants }),
       });
@@ -415,10 +415,10 @@ export const ChatProvider: React.FC<{
 
   const deleteMessage = useCallback(async (chatId: string, messageId: string) => {
     try {
-      const response = await fetch(`${apiBaseUrl}/chat/${chatId}/messages/${messageId}`, {
+      const response = await fetch(`${apiBaseUrl}/chats/${chatId}/messages/${messageId}`, {
         method: 'DELETE',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}` 
+          'Authorization': `Bearer ${accessToken}` 
         },
       });
       
