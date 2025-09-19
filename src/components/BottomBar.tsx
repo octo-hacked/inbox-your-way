@@ -1,9 +1,10 @@
-import { Home, MessageCircle, Bell, BookOpen, Sliders, LogOut } from "lucide-react";
+import { Home, MessageCircle, Bell, BookOpen, Sliders, LogOut, Upload } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Drawer } from "vaul";
 import type { Category } from "@/components/MainFeed";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
+import CreatePostDialog from "@/components/CreatePostDialog";
 
 type BottomBarProps = {
   monochrome: boolean;
