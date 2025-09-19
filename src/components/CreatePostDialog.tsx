@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { ImageIcon, PlaySquare, Upload, X } from "lucide-react";
+import { ImageIcon, PlaySquare, Upload } from "lucide-react";
 
 // Allowed post types
 export type PostType = "normal" | "reel";
