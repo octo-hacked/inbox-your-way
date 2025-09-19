@@ -340,9 +340,10 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="sm:max-w-[720px]">
         <DialogHeader>
-          <DialogTitle>Create Post</DialogTitle>
+          <DialogTitle className="text-xl">Create Post</DialogTitle>
+          <Steps step={step} />
         </DialogHeader>
 
         {step === 1 && (
