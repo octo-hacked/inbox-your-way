@@ -422,7 +422,7 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
 
         {step === 3 && (
           <div className="space-y-4">
-            <div className="rounded-md overflow-hidden border border-border bg-black">
+            <div className="rounded-xl overflow-hidden border border-border bg-black shadow-sm">
               <AspectRatio ratio={postType === "reel" ? 9 / 16 : 1}>
                 <div className="relative w-full h-full bg-black">
                   {postType === "reel" ? (
@@ -461,7 +461,7 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
 
         {step === 4 && (
           <div className="space-y-4">
-            <div className="rounded-md overflow-hidden border border-border bg-black">
+            <div className="rounded-xl overflow-hidden border border-border bg-black shadow-sm">
               <AspectRatio ratio={postType === "reel" ? 9 / 16 : 1}>
                 <div className="relative w-full h-full bg-black">
                   {postType === "reel" ? (
