@@ -52,17 +52,28 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
 
   if (!post) return null;
 
+  const [postingComment, setPostingComment] = useState(false);
+
   const handleSend = async () => {
+    if (postingComment) return;
     if (!newMessage.trim()) return;
     const body = newMessage.trim();
-    setNewMessage("");
+    setPostingComment(true);
     try {
       const commentsApi = await import("@/lib/comments");
       const res = await commentsApi.postComment(post.remoteId ?? post.id, body, undefined, accessToken);
-      const created = res?.comment || res?.data || res;
+      const createdRaw = res?.comment || res?.data || res;
+      const created = createdRaw?.comment || createdRaw?.data || createdRaw;
+      if (!created) {
+        console.warn('Unexpected comment create response:', res);
+        throw new Error('Invalid response from server');
+      }
       setCommentsList((prev) => [created, ...prev]);
+      setNewMessage("");
     } catch (err) {
       console.error("Failed to post comment:", err);
+    } finally {
+      setPostingComment(false);
     }
   };
 
