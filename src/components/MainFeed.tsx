@@ -1,6 +1,7 @@
 import { Heart, MessageCircle, Share2, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export type Category = "memes" | "news" | "other";
 
