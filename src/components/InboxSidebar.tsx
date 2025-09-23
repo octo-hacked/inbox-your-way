@@ -334,9 +334,9 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         {/* Messages */}
         <ScrollArea className="flex-1 inbox-scroll">
           <div className="p-3 space-y-3">
-            {currentMessages.map((message) => (
-              <div 
-                key={message.id}
+            {currentMessages.map((message, idx) => (
+              <div
+                key={message._id ?? message.id ?? `msg-${idx}`}
                 className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`max-w-[200px] rounded-lg p-2 ${
