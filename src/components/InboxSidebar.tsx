@@ -58,6 +58,31 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
     return () => { mounted = false; };
   }, [postPreview, accessToken, toast]);
 
+  const handleAddComment = async () => {
+    if (postingComment) return;
+    if (!newMessage.trim() || !postPreview) return;
+    const body = newMessage.trim();
+    setPostingComment(true);
+    try {
+      const commentsApi = await import("@/lib/comments");
+      const res = await commentsApi.postComment(postPreview.remoteId ?? postPreview.id, body, undefined, accessToken);
+      // Normalize created item
+      const createdRaw = res?.comment || res?.data || res;
+      const created = createdRaw?.comment || createdRaw?.data || createdRaw;
+      if (!created) {
+        console.warn('Unexpected comment create response:', res);
+        throw new Error('Invalid response from server');
+      }
+      setCommentsList((prev) => [created, ...prev]);
+      setNewMessage("");
+    } catch (err) {
+      console.error("Failed to post comment:", err);
+      toast({ title: "Comment Failed", description: "Could not post comment.", variant: "destructive" });
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
   const conversations = [
     {
       id: 1,
@@ -204,30 +229,6 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
     }
   };
 
-  const handleAddComment = async () => {
-    if (postingComment) return;
-    if (!newMessage.trim() || !postPreview) return;
-    const body = newMessage.trim();
-    setPostingComment(true);
-    try {
-      const commentsApi = await import("@/lib/comments");
-      const res = await commentsApi.postComment(postPreview.remoteId ?? postPreview.id, body, undefined, accessToken);
-      // Normalize created item
-      const createdRaw = res?.comment || res?.data || res;
-      const created = createdRaw?.comment || createdRaw?.data || createdRaw;
-      if (!created) {
-        console.warn('Unexpected comment create response:', res);
-        throw new Error('Invalid response from server');
-      }
-      setCommentsList((prev) => [created, ...prev]);
-      setNewMessage("");
-    } catch (err) {
-      console.error("Failed to post comment:", err);
-      toast({ title: "Comment Failed", description: "Could not post comment.", variant: "destructive" });
-    } finally {
-      setPostingComment(false);
-    }
-  };
 
   if (postToShare) {
     const toggleRecipient = (id: number) => {
