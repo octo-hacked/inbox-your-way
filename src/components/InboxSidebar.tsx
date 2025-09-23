@@ -211,6 +211,27 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   const currentChat = chats.find(c => c._id === selectedChat);
   const currentMessages = selectedChat ? (messages[selectedChat] || []) : [];
 
+  const getChatDisplayName = (chat: any) => {
+    if (!chat) return "";
+    if (chat.isGroupChat) return chat.name;
+    const other = chat.participants?.find((p: any) => p._id !== (chat.admin || ''));
+    return other?.username || other?.fullname || 'Unknown User';
+  };
+
+  const getChatAvatar = (chat: any) => {
+    if (!chat) return avatarFor('user');
+    if (chat.isGroupChat) return avatarFor(chat.name || 'group');
+    const other = chat.participants?.find((p: any) => p._id !== (chat.admin || ''));
+    return other?.avatar || avatarFor(other?.username || other?._id || 'user');
+  };
+
+  const getChatLastSeen = (chat: any) => {
+    if (!chat) return '';
+    const time = chat.lastMessage?.createdAt || chat.updatedAt;
+    if (!time) return '';
+    try { return formatDistanceToNow(new Date(time), { addSuffix: true }); } catch { return ''; }
+  };
+
   const handleSendMessage = async () => {
     if (!selectedChat || !newMessage.trim()) return;
     try {
