@@ -333,16 +333,14 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
             </button>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <img src={currentChat?.avatar} alt={currentChat?.name} className="w-8 h-8 rounded-full object-cover" />
-                {currentChat?.online && (
+                <img src={getChatAvatar(currentChat)} alt={getChatDisplayName(currentChat)} className="w-8 h-8 rounded-full object-cover" />
+                {currentChat && currentChat.participants && currentChat.participants.some((p: any) => onlineUsers.has(p._id)) && (
                   <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-white rounded-full"></div>
                 )}
               </div>
               <div>
-                <h3 className="text-sm font-medium text-foreground">{currentChat?.name}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {currentChat?.online ? "Active now" : "Last seen 2h ago"}
-                </p>
+                <h3 className="text-sm font-medium text-foreground">{getChatDisplayName(currentChat)}</h3>
+                <p className="text-xs text-muted-foreground">{getChatLastSeen(currentChat) || ''}</p>
               </div>
             </div>
             <div className="ml-auto flex items-center gap-1">
