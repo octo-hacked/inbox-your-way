@@ -89,7 +89,21 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         console.warn('Unexpected comment create response:', res);
         throw new Error('Invalid response from server');
       }
-      setCommentsList((prev) => [created, ...prev]);
+      const normalize = (c: any) => ({
+        id: c._id ?? c.id,
+        body: c.body ?? c.text ?? c.content ?? "",
+        user: {
+          username: c.commentBy?.username || c.user?.username || c.user || "unknown",
+          avatar: c.commentBy?.avatar || c.user?.avatar || avatarFor(c.commentBy?.username || c.user?.username || "user"),
+        },
+        parentId: c.parentComment ?? c.parent ?? null,
+        likes: c.likesCount ?? c.likes ?? 0,
+        liked: Boolean(c.isLikedByUser ?? c.isLiked ?? false),
+        replyCount: c.replyCount ?? c.repliesCount ?? 0,
+        timeAgo: c.timeAgo ?? (c.createdAt ? new Date(c.createdAt).toLocaleString() : ""),
+        raw: c,
+      });
+      setCommentsList((prev) => [normalize(created), ...prev]);
       setNewMessage("");
     } catch (err) {
       console.error("Failed to post comment:", err);
