@@ -24,6 +24,7 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
   const [commentsList, setCommentsList] = useState<any[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
     let mounted = true;
