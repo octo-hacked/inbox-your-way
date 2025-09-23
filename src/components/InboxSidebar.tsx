@@ -21,6 +21,32 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   const [newMessage, setNewMessage] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<number[]>([]);
   const { toast } = useToast();
+  const { accessToken } = useAuth();
+
+  const [commentsList, setCommentsList] = useState<any[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!postPreview) return;
+      setLoadingComments(true);
+      try {
+        const commentsApi = await import("@/lib/comments");
+        const res = await commentsApi.getComments({ postId: postPreview.remoteId ?? postPreview.id, limit: 50, includeReplies: false, token: accessToken });
+        const items = res?.comments || res?.data || res?.items || [];
+        if (!mounted) return;
+        setCommentsList(items);
+      } catch (err) {
+        console.error("Failed to load comments:", err);
+        toast({ title: "Comments", description: "Could not load comments.", variant: "destructive" });
+      } finally {
+        if (mounted) setLoadingComments(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [postPreview, accessToken, toast]);
 
   const conversations = [
     {
