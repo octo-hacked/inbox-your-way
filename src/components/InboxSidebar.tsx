@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Send, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 import type { FeedPost } from "@/components/MainFeed";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
