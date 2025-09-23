@@ -401,9 +401,9 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
       {/* Conversations List */}
       <ScrollArea className="flex-1 inbox-scroll">
-        {conversations.map((conversation) => (
+        {conversations.map((conversation, idx) => (
           <div
-            key={conversation.id}
+            key={conversation.id ?? `conv-${idx}`}
             onClick={() => {
               setSelectedChat(conversation.id);
               const chatObj = chats.find(ch => ch._id === conversation.id);
