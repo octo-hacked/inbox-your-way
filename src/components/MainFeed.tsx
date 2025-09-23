@@ -52,20 +52,27 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
       const res = await import("@/lib/posts");
       const data = await res.fetchFeed({ page: 1, limit: 20, category: categoryParam, lowDopamineOnly: Boolean(lowDopamineOnly), sortBy: "createdAt", token: accessToken });
       const items: any[] = data?.posts || data?.items || [];
-      const mapped = items.map((p: any) => ({
-        id: p.id ?? p._id ?? 0,
-        username: p.author?.username || p.username || "unknown",
-        content: p.description || p.content || "",
-        likes: p.likes ?? 0,
-        comments: p.commentsCount ?? p.comments ?? 0,
-        time: p.createdAt ? new Date(p.createdAt).toLocaleString() : "",
-        image: p.media?.[0]?.url || p.image || postImageFor(p._id || p.id || Math.random()),
-        avatar: p.author?.avatar || avatarFor(p.username || "user"),
-        category: (p.category as Category) || "other",
-        lowDopamine: Boolean(p.isLowDopamine),
-        isVerified: Boolean(p.author?.isVerified),
-        liked: Boolean(p.isLiked),
-      }));
+      const mapped = items.map((p: any) => {
+        const username = p.uploadedBy?.username || p.author?.username || p.username || "unknown";
+        const rawCategory = String(p.category || "other");
+        const category = (["memes", "news", "other"].includes(rawCategory) ? rawCategory : "other") as Category;
+        const mediaUrl = typeof p.media === "string" ? p.media : Array.isArray(p.media) ? p.media[0]?.url : undefined;
+
+        return {
+          id: p.id ?? p._id ?? 0,
+          username,
+          content: p.description || p.title || p.content || "",
+          likes: p.likes ?? 0,
+          comments: p.comments ?? p.commentsCount ?? 0,
+          time: p.timeAgo || (p.createdAt ? new Date(p.createdAt).toLocaleString() : ""),
+          image: mediaUrl || p.image || postImageFor(p._id || p.id || Math.random()),
+          avatar: p.uploadedBy?.avatar || avatarFor(username || "user"),
+          category,
+          lowDopamine: Boolean(p.isLowDopamine),
+          isVerified: Boolean(p.uploadedBy?.isVerified || p.author?.isVerified),
+          liked: Boolean(p.isLikedByUser ?? p.isLiked ?? p.liked),
+        } as FeedPost;
+      });
       setPosts(mapped);
     } catch (err) {
       console.error("Failed to load feed:", err);
