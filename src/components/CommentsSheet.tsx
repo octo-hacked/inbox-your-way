@@ -67,8 +67,6 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
 
   if (!post) return null;
 
-  const [postingComment, setPostingComment] = useState(false);
-
   const handleSend = async () => {
     if (postingComment) return;
     if (!newMessage.trim()) return;
