@@ -17,6 +17,7 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
   const [newMessage, setNewMessage] = useState("");
   const [commentsList, setCommentsList] = useState<any[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
   const { accessToken } = useAuth();
 
   useEffect(() => {
