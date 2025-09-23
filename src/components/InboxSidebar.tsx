@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Send, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
