@@ -45,6 +45,37 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
   const [loading, setLoading] = useState(false);
   const { accessToken } = useAuth();
 
+  const defaultPosts: FeedPost[] = [
+    {
+      id: 1,
+      username: "sarah_chen",
+      content: "Just finished reading about mindful technology and how it can help us stay present in our digital lives.",
+      likes: 23,
+      comments: 5,
+      time: "2h",
+      image: postImageFor("sarah-1"),
+      avatar: avatarFor("sarah_chen"),
+      category: "news",
+      lowDopamine: true,
+      isVerified: true,
+      liked: false,
+    },
+    {
+      id: 2,
+      username: "alex_m",
+      content: "Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design.",
+      likes: 45,
+      comments: 12,
+      time: "4h",
+      image: postImageFor("alex-2"),
+      avatar: avatarFor("alex_m"),
+      category: "other",
+      lowDopamine: false,
+      isVerified: false,
+      liked: false,
+    },
+  ];
+
   const loadFeed = useCallback(async () => {
     setLoading(true);
     try {
@@ -73,9 +104,17 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
           liked: Boolean(p.isLikedByUser ?? p.isLiked ?? p.liked),
         } as FeedPost;
       });
-      setPosts(mapped);
+
+      if (mapped.length === 0) {
+        // if API returned no posts, fall back to default sample posts
+        setPosts(defaultPosts);
+      } else {
+        setPosts(mapped);
+      }
     } catch (err) {
       console.error("Failed to load feed:", err);
+      // On network/API failure, show default sample posts so UI stays useful during development
+      setPosts(defaultPosts);
     } finally {
       setLoading(false);
     }
