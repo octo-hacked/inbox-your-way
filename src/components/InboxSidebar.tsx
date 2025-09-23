@@ -27,6 +27,12 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
 
+  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, loading: chatsLoading } = useChat();
+
+  useEffect(() => {
+    fetchChats().catch((e) => console.error('fetchChats failed', e));
+  }, [fetchChats]);
+
   useEffect(() => {
     let mounted = true;
     const load = async () => {
