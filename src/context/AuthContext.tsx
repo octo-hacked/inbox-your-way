@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async ({ email, password }: { email: string; password: string }) => {
       setLoading(true);
       try {
-        const res = await axios.post("http://localhost:3000/api/v1/users/login", { email, password }, { withCredentials: true } );
+        const res = await axios.post(`${API_BASE}/users/login`, { email, password }, { withCredentials: true } );
 
         if (res.data.success) {
           // 2. Destructure the response according to your API structure
