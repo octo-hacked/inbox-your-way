@@ -27,7 +27,17 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
       try {
         const commentsApi = await import("@/lib/comments");
         const res = await commentsApi.getComments({ postId: post.remoteId ?? post.id, limit: 50, includeReplies: false, token: accessToken });
-        const items = res?.comments || res?.data || res?.items || [];
+        const parseArray = (v: any) => {
+          if (Array.isArray(v)) return v;
+          if (!v) return [];
+          if (Array.isArray(v.comments)) return v.comments;
+          if (Array.isArray(v.items)) return v.items;
+          if (Array.isArray(v.data)) return v.data;
+          if (Array.isArray(v.data?.comments)) return v.data.comments;
+          if (Array.isArray(v.data?.items)) return v.data.items;
+          return [];
+        };
+        const items = parseArray(res);
         if (!mounted) return;
         setCommentsList(items);
       } catch (err) {
