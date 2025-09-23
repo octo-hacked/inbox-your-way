@@ -124,18 +124,45 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
             <p className="text-xs text-muted-foreground leading-relaxed">{postPreview.content}</p>
             <div className="h-px w-full bg-border" />
             <div className="space-y-3">
-              {comments.map((c) => (
-                <div key={c.id} className="flex items-start gap-3">
-                  <img src={c.avatar} alt={c.user} className="w-7 h-7 rounded-full object-cover" />
-                  <div>
-                    <div className="text-sm text-foreground"><span className="font-medium">{c.user}</span> {c.text}</div>
-                    <div className="text-[10px] text-muted-foreground">{c.time}</div>
+              {loadingComments ? (
+                <div className="text-sm text-muted-foreground">Loading comments...</div>
+              ) : commentsList.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No comments yet</div>
+              ) : (
+                commentsList.map((c: any) => (
+                  <div key={c._id ?? c.id} className="flex items-start gap-3">
+                    <img src={c.user?.avatar || avatarFor(c.user?.username || c.user || 'user')} alt={c.user?.username || c.user} className="w-7 h-7 rounded-full object-cover" />
+                    <div>
+                      <div className="text-sm text-foreground"><span className="font-medium">{c.user?.username || c.user}</span> {c.body || c.text || c.content}</div>
+                      <div className="text-[10px] text-muted-foreground">{c.timeAgo || c.createdAt}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </ScrollArea>
+
+        {/* Composer */}
+        <div className="p-3 border-t border-border">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+              className="flex-1 bg-input rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+            <button
+              onClick={() => handleAddComment()}
+              className="p-2 bg-primary text-primary-foreground rounded-lg active:scale-[0.98]"
+              aria-label="Send comment"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
