@@ -17,9 +17,9 @@ type InboxSidebarProps = {
 };
 
 const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShare }: InboxSidebarProps) => {
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [selectedRecipients, setSelectedRecipients] = useState<number[]>([]);
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const { toast } = useToast();
   const { accessToken } = useAuth();
 
