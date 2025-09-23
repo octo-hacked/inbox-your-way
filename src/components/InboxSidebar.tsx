@@ -344,7 +344,7 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
               </div>
             ) : (
               currentMessages.map((message: any, idx: number) => {
-                const isOwn = message.sender?._id === undefined ? (message.sender === 'me') : (message.sender._id === (useAuth().user?.id));
+                const isOwn = message.sender?._id === undefined ? (message.sender === 'me') : (message.sender._id === user?.id);
                 return (
                   <div
                     key={message._id ?? message.id ?? `msg-${idx}`}
