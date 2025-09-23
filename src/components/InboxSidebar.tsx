@@ -46,7 +46,23 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         };
         const items = parseArray(res);
         if (!mounted) return;
-        setCommentsList(items);
+        const normalize = (c: any) => ({
+          id: c._id ?? c.id,
+          body: c.body ?? c.text ?? c.content ?? "",
+          user: {
+            username: c.commentBy?.username || c.user?.username || c.user || "unknown",
+            avatar: c.commentBy?.avatar || c.user?.avatar || avatarFor(c.commentBy?.username || c.user?.username || "user"),
+            fullname: c.commentBy?.fullname || c.user?.fullname || undefined,
+            email: c.commentBy?.email || c.user?.email || undefined,
+          },
+          parentId: c.parentComment ?? c.parent ?? null,
+          likes: c.likesCount ?? c.likes ?? 0,
+          liked: Boolean(c.isLikedByUser ?? c.isLiked ?? false),
+          replyCount: c.replyCount ?? c.repliesCount ?? 0,
+          timeAgo: c.timeAgo ?? (c.createdAt ? new Date(c.createdAt).toLocaleString() : ""),
+          raw: c,
+        });
+        setCommentsList(items.map(normalize));
       } catch (err) {
         console.error("Failed to load comments:", err);
         toast({ title: "Comments", description: "Could not load comments.", variant: "destructive" });
