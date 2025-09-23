@@ -203,28 +203,18 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
   // Default inbox UI
 
-  const messages: Record<number, { id: number; text: string; sender: "me" | "other"; time: string }[]> = {
-    1: [
-      { id: 1, text: "Hey! How are you doing?", sender: "other", time: "10:30 AM" },
-      { id: 2, text: "I'm doing great!", sender: "me", time: "10:32 AM" },
-      { id: 3, text: "Thanks for sharing that article!", sender: "other", time: "10:33 AM" }
-    ],
-    2: [
-      { id: 1, text: "Hey Alex!", sender: "me", time: "Yesterday" },
-      { id: 2, text: "Let's catch up soon", sender: "other", time: "1h ago" }
-    ],
-    3: [
-      { id: 1, text: "Great presentation today", sender: "other", time: "3h ago" },
-      { id: 2, text: "Thank you! I'm glad it went well.", sender: "me", time: "3h ago" }
-    ]
-  };
+  // use real chat messages from ChatContext
+  const currentChat = chats.find(c => c._id === selectedChat);
+  const currentMessages = selectedChat ? (messages[selectedChat] || []) : [];
 
-  const currentChat = conversations.find(c => c.id === selectedChat);
-  const currentMessages = selectedChat ? messages[selectedChat] || [] : [];
-
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
+  const handleSendMessage = async () => {
+    if (!selectedChat || !newMessage.trim()) return;
+    try {
+      await sendMessage(selectedChat, newMessage.trim());
       setNewMessage("");
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      toast({ title: 'Send failed', description: 'Could not send message', variant: 'destructive' });
     }
   };
 
