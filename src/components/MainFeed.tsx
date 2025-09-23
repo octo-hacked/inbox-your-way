@@ -127,14 +127,21 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
   }, [loadFeed]);
 
   const toggleLike = async (id: number) => {
+    // Optimistic UI update
     setPosts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p)),
     );
     try {
+      const post = posts.find((p) => p.id === id);
+      const targetId = post?.remoteId ?? post?.id ?? id;
       const res = await import("@/lib/posts");
-      await res.toggleLike(id, accessToken ?? undefined);
+      await res.toggleLike(targetId, accessToken ?? undefined);
     } catch (e) {
       console.error("Like toggle failed:", e);
+      // On error, revert optimistic update
+      setPosts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p)),
+      );
     }
   };
 
