@@ -214,7 +214,13 @@ export const ChatProvider: React.FC<{
 
   // Initialize socket connection
   const initializeSocket = useCallback((token: string) => {
-    const socket = io('http://localhost:3000', {
+    const socketBase = (import.meta.env.VITE_SOCKET_BASE as string) ?? (
+      typeof window !== 'undefined'
+        ? (apiBaseUrl && apiBaseUrl.startsWith('http') ? apiBaseUrl.replace(/\/api\/v\d+$/i, '') : window.location.origin)
+        : ''
+    );
+
+    const socket = io(socketBase, {
       auth: { token },
       withCredentials: true,
     });
