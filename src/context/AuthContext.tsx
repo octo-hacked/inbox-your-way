@@ -133,10 +133,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         form.append("password", password);
         form.append("avatar", avatar);
 
-        const res = await axios.post("http://localhost:3000/api/v1/users/register", form, {
+        const res = await axios.post(`${API_BASE}/users/register`, form, {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
-        }, );
+        });
 
         if (res.data.success) {
           toast({ title: "Registration Successful", description: "Please log in to continue." });
