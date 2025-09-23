@@ -201,7 +201,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   }
 };
 
-import { API_BASE } from "@/lib/config";
+import { API_BASE, SOCKET_BASE } from "@/lib/config";
 
 export const ChatProvider: React.FC<{
   children: ReactNode;
