@@ -120,53 +120,15 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
     }
   };
 
-  const conversations = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      avatar: avatarFor("Sarah Chen"),
-      lastMessage: "Thanks for sharing that article!",
-      time: "2m",
-      unread: true,
-      online: true
-    },
-    {
-      id: 2,
-      name: "Alex Morgan",
-      avatar: avatarFor("Alex Morgan"),
-      lastMessage: "Let's catch up soon",
-      time: "1h",
-      unread: false,
-      online: true
-    },
-    {
-      id: 3,
-      name: "Jordan Kim",
-      avatar: avatarFor("Jordan Kim"),
-      lastMessage: "Great presentation today",
-      time: "3h",
-      unread: false,
-      online: false
-    },
-    {
-      id: 4,
-      name: "Emma Wilson",
-      avatar: avatarFor("Emma Wilson"),
-      lastMessage: "See you at the meeting",
-      time: "1d",
-      unread: true,
-      online: false
-    },
-    {
-      id: 5,
-      name: "Marcus Johnson",
-      avatar: avatarFor("Marcus Johnson"),
-      lastMessage: "The project looks amazing",
-      time: "2d",
-      unread: false,
-      online: true
-    }
-  ];
+  const conversations = chats.map((c) => ({
+    id: c._id,
+    name: c.isGroupChat ? c.name : (c.participants.find(p => p._id !== (c.admin || ''))?.username || 'Unknown'),
+    avatar: c.participants[0]?.avatar || avatarFor(c.name || 'chat'),
+    lastMessage: c.lastMessage?.content || '',
+    time: c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '',
+    unread: false,
+    online: c.participants.some(p => onlineUsers.has(p._id)),
+  }));
 
   if (postPreview) {
 
