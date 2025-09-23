@@ -163,8 +163,8 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
               ) : commentsList.length === 0 ? (
                 <div className="text-sm text-muted-foreground">No comments yet</div>
               ) : (
-                commentsList.map((c: any) => (
-                  <div key={c._id ?? c.id} className="flex items-start gap-3">
+                commentsList.map((c: any, idx: number) => (
+                  <div key={c.id ?? `comment-${idx}`} className="flex items-start gap-3">
                     <img src={c.user?.avatar || avatarFor(c.user?.username || c.user || 'user')} alt={c.user?.username || c.user} className="w-7 h-7 rounded-full object-cover" />
                     <div>
                       <div className="text-sm text-foreground"><span className="font-medium">{c.user?.username || c.user}</span> {c.body || c.text || c.content}</div>
