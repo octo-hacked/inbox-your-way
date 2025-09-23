@@ -120,8 +120,8 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
     }
   };
 
-  const conversations = chats.map((c) => ({
-    id: c._id,
+  const conversations = chats.map((c, i) => ({
+    id: c._id ?? `chat-${i}`,
     name: c.isGroupChat ? c.name : (c.participants.find(p => p._id !== (c.admin || ''))?.username || 'Unknown'),
     avatar: c.participants[0]?.avatar || avatarFor(c.name || 'chat'),
     lastMessage: c.lastMessage?.content || '',
