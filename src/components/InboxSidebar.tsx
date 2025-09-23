@@ -220,7 +220,7 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
 
   if (postToShare) {
-    const toggleRecipient = (id: number) => {
+    const toggleRecipient = (id: string) => {
       setSelectedRecipients((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
     };
 
