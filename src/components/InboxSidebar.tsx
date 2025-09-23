@@ -338,27 +338,37 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         {/* Messages */}
         <ScrollArea className="flex-1 inbox-scroll">
           <div className="p-3 space-y-3">
-            {currentMessages.map((message, idx) => (
-              <div
-                key={message._id ?? message.id ?? `msg-${idx}`}
-                className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-[200px] rounded-lg p-2 ${
-                  message.sender === 'me' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted text-foreground'
-                }`}>
-                  <p className="text-xs">{message.text}</p>
-                  <p className={`text-[10px] mt-1 ${
-                    message.sender === 'me' 
-                      ? 'text-primary-foreground/70' 
-                      : 'text-muted-foreground'
-                  }`}>
-                    {message.time}
-                  </p>
-                </div>
+            {currentMessages.length === 0 ? (
+              <div className="flex items-center justify-center h-32 text-muted-foreground">
+                <p>No messages yet. Start the conversation!</p>
               </div>
-            ))}
+            ) : (
+              currentMessages.map((message: any, idx: number) => {
+                const isOwn = message.sender?._id === undefined ? (message.sender === 'me') : (message.sender._id === (useAuth().user?.id));
+                return (
+                  <div
+                    key={message._id ?? message.id ?? `msg-${idx}`}
+                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[80%] md:max-w-xs rounded-lg p-3 ${
+                      isOwn
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-foreground'
+                    }`}>
+                      {!isOwn && currentChat?.isGroupChat && (
+                        <p className="text-xs font-medium mb-1 opacity-75">
+                          {message.sender?.username}
+                        </p>
+                      )}
+                      <p className="text-sm">{message.content ?? message.text ?? ''}</p>
+                      <p className={`text-xs mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                        {message.createdAt ? formatDistanceToNow(new Date(message.createdAt), { addSuffix: true }) : (message.time || '')}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </ScrollArea>
 
