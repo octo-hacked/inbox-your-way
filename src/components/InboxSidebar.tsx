@@ -21,17 +21,20 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   const [newMessage, setNewMessage] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const { toast } = useToast();
-  const { accessToken } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const [commentsList, setCommentsList] = useState<any[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
 
-  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, loading: chatsLoading } = useChat();
+  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, initializeSocket, loading: chatsLoading } = useChat();
 
   useEffect(() => {
-    fetchChats().catch((e) => console.error('fetchChats failed', e));
-  }, [fetchChats]);
+    if (accessToken && user) {
+      try { initializeSocket?.(accessToken); } catch (e) { /* ignore */ }
+      fetchChats().catch((e) => console.error('fetchChats failed', e));
+    }
+  }, [accessToken, user, fetchChats, initializeSocket]);
 
   useEffect(() => {
     let mounted = true;
