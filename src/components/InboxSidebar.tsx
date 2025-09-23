@@ -204,8 +204,6 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
     }
   };
 
-  const [postingComment, setPostingComment] = useState(false);
-
   const handleAddComment = async () => {
     if (postingComment) return;
     if (!newMessage.trim() || !postPreview) return;
