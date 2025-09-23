@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Drawer } from "vaul";
 import { ArrowLeft, Send } from "lucide-react";
 import { useEffect, useState } from "react";
