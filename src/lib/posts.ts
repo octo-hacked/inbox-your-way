@@ -28,7 +28,8 @@ async function request(url: string, opts: RequestInit = {}) {
 
   // If 401 and looks like expired token, try refresh once
   if (res.status === 401) {
-    const msg = (data && (data.message || data.error || String(data))).toLowerCase?.() ?? "";
+    const rawMsg = (data && (data.message || data.error || String(data))) || "";
+    const msg = String(rawMsg).toLowerCase();
     if (msg.includes("expired") || msg.includes("token") || msg.includes("jwt")) {
       try {
         const auth = await import("@/lib/auth");
