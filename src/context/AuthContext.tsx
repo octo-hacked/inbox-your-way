@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import { API_BASE } from "@/lib/config";
 
 // 1. Updated User type to match your API response
 type User = {
