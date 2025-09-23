@@ -201,11 +201,13 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   }
 };
 
-export const ChatProvider: React.FC<{ 
-  children: ReactNode; 
-  apiBaseUrl?: string; 
-  
-}> = ({ children, apiBaseUrl = 'http://localhost:3000/api/v1' }) => {
+import { API_BASE } from "@/lib/config";
+
+export const ChatProvider: React.FC<{
+  children: ReactNode;
+  apiBaseUrl?: string;
+
+}> = ({ children, apiBaseUrl = API_BASE }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const { user,accessToken } = useAuth(); // Use your existing auth context
   
