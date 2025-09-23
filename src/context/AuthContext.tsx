@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       await axios.post(
-        "http://localhost:3000/api/v1//users/logout",
+        `${API_BASE}/users/logout`,
         {},
         {
           withCredentials: true,
