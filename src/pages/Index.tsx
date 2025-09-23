@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useState, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
 import BottomBar from "@/components/BottomBar";
 import MainFeed, { type FeedPost, type Category } from "@/components/MainFeed";
