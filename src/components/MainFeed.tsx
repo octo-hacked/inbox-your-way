@@ -91,7 +91,8 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
         const mediaUrl = typeof p.media === "string" ? p.media : Array.isArray(p.media) ? p.media[0]?.url : undefined;
 
         return {
-          id: p.id ?? p._id ?? 0,
+          id: typeof p.id === 'number' ? p.id : (Math.floor(Math.random()*1000000)),
+          remoteId: p._id ?? (typeof p.id === 'string' ? p.id : undefined),
           username,
           content: p.description || p.title || p.content || "",
           likes: p.likes ?? 0,
