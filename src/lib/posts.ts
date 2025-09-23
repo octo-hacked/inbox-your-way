@@ -10,30 +10,42 @@ type FetchFeedArgs = {
 };
 
 async function request(url: string, opts: RequestInit = {}) {
-  const res = await fetch(url, opts);
+  const doFetch = async (options: RequestInit) => {
+    const res = await fetch(url, options);
 
-  // Parse response body defensively. In some environments the body stream
-  // may have been read by instrumentation (e.g. FullStory) causing a
-  // "body stream already read" error when calling res.text()/res.json().
-  // We try multiple safe approaches and fall back to null.
-  let data: any = null;
-  try {
-    // Prefer cloning the response so reading won't affect other consumers.
-    const text = await res.clone().text();
+    let data: any = null;
     try {
-      data = text ? JSON.parse(text) : null;
-    } catch (e) {
-      // Not JSON, keep text as-is
-      data = text;
+      const text = await res.clone().text();
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+    } catch {
+      try { data = await res.json(); } catch { data = null; }
     }
-  } catch (e) {
-    // clone().text() can fail if the body was already consumed by something else.
-    // Try res.json() as a last resort, wrapped in try/catch.
-    try {
-      data = await res.json();
-    } catch (err) {
-      // Give up parsing body
-      data = null;
+
+    return { res, data } as { res: Response; data: any };
+  };
+
+  let { res, data } = await doFetch(opts);
+
+  // If 401 and looks like expired token, try refresh once
+  if (res.status === 401) {
+    const msg = (data && (data.message || data.error || String(data))).toLowerCase?.() ?? "";
+    if (msg.includes("expired") || msg.includes("token") || msg.includes("jwt")) {
+      try {
+        const auth = await import("@/lib/auth");
+        const newAccess = await auth.refreshAccessToken();
+        if (newAccess) {
+          // set Authorization header and retry
+          const headers = new Headers(opts.headers as HeadersInit);
+          headers.set("Authorization", `Bearer ${newAccess}`);
+          const nextOpts = { ...opts, headers } as RequestInit;
+          const retry = await doFetch(nextOpts);
+          res = retry.res;
+          data = retry.data;
+        }
+      } catch (err) {
+        // refresh failed, fall through to error handling
+        console.error("Token refresh failed:", err);
+      }
     }
   }
 
