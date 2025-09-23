@@ -11,13 +11,37 @@ type FetchFeedArgs = {
 
 async function request(url: string, opts: RequestInit = {}) {
   const res = await fetch(url, opts);
-  const text = await res.text();
+
+  // Parse response body defensively. In some environments the body stream
+  // may have been read by instrumentation (e.g. FullStory) causing a
+  // "body stream already read" error when calling res.text()/res.json().
+  // We try multiple safe approaches and fall back to null.
   let data: any = null;
-  try { data = text ? JSON.parse(text) : null; } catch {}
+  try {
+    // Prefer cloning the response so reading won't affect other consumers.
+    const text = await res.clone().text();
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (e) {
+      // Not JSON, keep text as-is
+      data = text;
+    }
+  } catch (e) {
+    // clone().text() can fail if the body was already consumed by something else.
+    // Try res.json() as a last resort, wrapped in try/catch.
+    try {
+      data = await res.json();
+    } catch (err) {
+      // Give up parsing body
+      data = null;
+    }
+  }
+
   if (!res.ok) {
-    const message = data?.message || data?.error || res.statusText || "Request failed";
+    const message = (data && (data.message || data.error)) || res.statusText || "Request failed";
     throw new Error(message);
   }
+
   return data;
 }
 
