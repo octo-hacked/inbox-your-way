@@ -258,8 +258,8 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
             <div className="space-y-3">
               <div className="text-xs font-medium text-foreground">Select recipients</div>
-              {conversations.map((c) => (
-                <label key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-hover-bg cursor-pointer">
+              {conversations.map((c, idx) => (
+                <label key={c.id ?? `conv-${idx}`} className="flex items-center gap-3 p-2 rounded hover:bg-hover-bg cursor-pointer">
                   <div className="relative">
                     <img src={c.avatar} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
                     {c.online && (
