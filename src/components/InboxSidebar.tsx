@@ -97,11 +97,6 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   ];
 
   if (postPreview) {
-    const comments = [
-      { id: 1, user: "alex_m", avatar: avatarFor("alex_m"), text: "Love this!", time: "2m" },
-      { id: 2, user: "jordan.k", avatar: avatarFor("jordan.k"), text: "Totally agree.", time: "10m" },
-      { id: 3, user: "emma_w", avatar: avatarFor("emma_w"), text: "So well said.", time: "1h" }
-    ];
 
     return (
       <div className="w-80 h-screen bg-card border-l border-border flex flex-col">
