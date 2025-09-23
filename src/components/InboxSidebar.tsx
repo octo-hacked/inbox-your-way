@@ -194,6 +194,21 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
     }
   };
 
+  const handleAddComment = async () => {
+    if (!newMessage.trim() || !postPreview) return;
+    const body = newMessage.trim();
+    setNewMessage("");
+    try {
+      const commentsApi = await import("@/lib/comments");
+      const res = await commentsApi.postComment(postPreview.remoteId ?? postPreview.id, body, undefined, accessToken);
+      const created = res?.comment || res?.data || res;
+      setCommentsList((prev) => [created, ...prev]);
+    } catch (err) {
+      console.error("Failed to post comment:", err);
+      toast({ title: "Comment Failed", description: "Could not post comment.", variant: "destructive" });
+    }
+  };
+
   if (postToShare) {
     const toggleRecipient = (id: number) => {
       setSelectedRecipients((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
