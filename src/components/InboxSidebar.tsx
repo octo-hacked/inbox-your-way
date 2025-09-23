@@ -402,9 +402,16 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
       {/* Conversations List */}
       <ScrollArea className="flex-1 inbox-scroll">
         {conversations.map((conversation) => (
-          <div 
+          <div
             key={conversation.id}
-            onClick={() => setSelectedChat(conversation.id)}
+            onClick={() => {
+              setSelectedChat(conversation.id);
+              const chatObj = chats.find(ch => ch._id === conversation.id);
+              if (chatObj) {
+                setActiveChat(chatObj);
+                fetchMessages(conversation.id as string).catch((e) => console.error('fetchMessages failed', e));
+              }
+            }}
             className="p-4 border-b border-border hover:bg-hover-bg cursor-pointer transition-colors"
           >
             <div className="flex items-start gap-3">
