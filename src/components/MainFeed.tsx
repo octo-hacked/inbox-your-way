@@ -186,8 +186,8 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
               {/* Post Header */}
               <div className="p-3 md:p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0 flex-grow">
-                  {post.remoteId ? (
-                    <Link to={`/profile/${encodeURIComponent(String(post.remoteId))}`} className="flex items-center gap-3 min-w-0">
+                  {post.uploaderId ? (
+                    <Link to={`/profile/${encodeURIComponent(String(post.uploaderId))}`} className="flex items-center gap-3 min-w-0">
                       <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                     </Link>
                   ) : (
