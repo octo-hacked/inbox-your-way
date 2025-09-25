@@ -44,8 +44,15 @@ async function request(url: string, opts: RequestInit = {}) {
           data = retry.data;
         }
       } catch (err) {
-        // refresh failed, fall through to error handling
+        // refresh failed, signal session expiry so the app can handle logout
         console.error("Token refresh failed:", err);
+        try {
+          window.dispatchEvent(new CustomEvent("sessionExpired"));
+        } catch (e) {
+          // ignore
+        }
+        // rethrow so callers receive the error
+        throw err;
       }
     }
   }
