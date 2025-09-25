@@ -198,8 +198,8 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
 
                   <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-1">
-                      {post.remoteId ? (
-                        <Link to={`/profile/${encodeURIComponent(String(post.remoteId))}`} className="text-sm font-medium text-foreground truncate">
+                      {post.uploaderId ? (
+                        <Link to={`/profile/${encodeURIComponent(String(post.uploaderId))}`} className="text-sm font-medium text-foreground truncate">
                           {post.username}
                         </Link>
                       ) : (
