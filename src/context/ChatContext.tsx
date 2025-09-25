@@ -454,24 +454,30 @@ export const ChatProvider: React.FC<{
     try {
       const response = await fetch(`${apiBaseUrl}/chats/${chatId}/messages/${messageId}`, {
         method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${accessToken}` 
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to delete message');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         dispatch({ type: 'REMOVE_MESSAGE', payload: { chatId, messageId } });
       }
     } catch (error) {
       console.error('Failed to delete message:', error);
       throw error;
     }
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, accessToken]);
 
   const setActiveChat = useCallback((chat: Chat | null) => {
     dispatch({ type: 'SET_ACTIVE_CHAT', payload: chat });
