@@ -157,6 +157,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [signIn, toast]
   );
 
+  // On initial load, if we have a refresh token but no access token, try to refresh it
+  const initialRefreshTriedRef = useRef(false);
+  useEffect(() => {
+    if (initialRefreshTriedRef.current) return;
+    initialRefreshTriedRef.current = true;
+
+    const local = loadFromStorage();
+    if (local.accessToken) return; // already have access token
+    if (!local.refreshToken) return; // nothing to refresh
+
+    (async () => {
+      try {
+        const auth = await import("@/lib/auth");
+        const newAccess = await auth.refreshAccessToken();
+        if (newAccess) {
+          const next = loadFromStorage();
+          persist(next);
+          toast({ title: "Session Restored", description: "Your session was refreshed." });
+        }
+      } catch (error: any) {
+        console.error("Refresh on load failed:", error);
+        await signOut();
+        toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+      }
+    })();
+    // Intentionally run only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for global sessionExpired events (dispatched when refresh fails during requests)
+  useEffect(() => {
+    const handler = () => {
+      if (!state.accessToken && !state.refreshToken) return;
+      (async () => {
+        await signOut();
+        toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+      })();
+    };
+
+    window.addEventListener("sessionExpired", handler);
+    return () => window.removeEventListener("sessionExpired", handler);
+  }, [state.accessToken, state.refreshToken, signOut, toast]);
+
   const value: AuthContextType = useMemo(
     () => ({
       ...state,
