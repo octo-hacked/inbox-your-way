@@ -388,17 +388,24 @@ export const ChatProvider: React.FC<{
     try {
       const response = await fetch(`${apiBaseUrl}/chats/direct/${userId}`, {
         method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${accessToken}` 
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+          'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to create direct chat');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         const existingChat = state.chats.find(chat => chat._id === data.data._id);
         if (!existingChat) {
           dispatch({ type: 'ADD_CHAT', payload: data.data });
@@ -409,7 +416,7 @@ export const ChatProvider: React.FC<{
       console.error('Failed to create direct chat:', error);
       throw error;
     }
-  }, [apiBaseUrl, state.chats]);
+  }, [apiBaseUrl, state.chats, accessToken]);
 
   const createGroupChat = useCallback(async (name: string, participants: string[]): Promise<Chat | undefined> => {
     try {
