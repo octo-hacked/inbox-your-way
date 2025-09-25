@@ -96,6 +96,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
         return {
           id: typeof p.id === 'number' ? p.id : (Math.floor(Math.random()*1000000)),
           remoteId: p._id ?? (typeof p.id === 'string' ? p.id : undefined),
+          uploaderId: p.uploadedBy?._id ?? p.author?._id ?? p.uploadedBy?._id,
           username,
           content: p.description || p.title || p.content || "",
           likes: p.likes ?? 0,
