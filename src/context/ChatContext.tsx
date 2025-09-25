@@ -278,7 +278,7 @@ export const ChatProvider: React.FC<{
     });
 
     return socket;
-  }, []);
+  }, [apiBaseUrl]);
 
   // API calls
   const fetchChats = useCallback(async () => {
