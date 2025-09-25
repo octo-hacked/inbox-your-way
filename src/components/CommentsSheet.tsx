@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import type { FeedPost } from "@/components/MainFeed";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatDateTime, formatDateRelative } from "@/lib/utils";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
 
