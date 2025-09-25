@@ -71,7 +71,7 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
           likes: c.likesCount ?? c.likes ?? 0,
           liked: Boolean(c.isLikedByUser ?? c.isLiked ?? false),
           replyCount: c.replyCount ?? c.repliesCount ?? 0,
-          timeAgo: c.timeAgo ?? (c.createdAt ? new Date(c.createdAt).toLocaleString() : ""),
+          timeAgo: c.timeAgo ?? (c.createdAt ? formatDateRelative(c.createdAt) : ""),
           raw: c,
         });
         setCommentsList(items.map(normalize));
@@ -112,7 +112,7 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         likes: c.likesCount ?? c.likes ?? 0,
         liked: Boolean(c.isLikedByUser ?? c.isLiked ?? false),
         replyCount: c.replyCount ?? c.repliesCount ?? 0,
-        timeAgo: c.timeAgo ?? (c.createdAt ? new Date(c.createdAt).toLocaleString() : ""),
+        timeAgo: c.timeAgo ?? (c.createdAt ? formatDateRelative(c.createdAt) : ""),
         raw: c,
       });
       setCommentsList((prev) => [normalize(created), ...prev]);
@@ -130,7 +130,7 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
     name: c.isGroupChat ? c.name : (c.participants.find(p => p._id !== (c.admin || ''))?.username || 'Unknown'),
     avatar: c.participants[0]?.avatar || avatarFor(c.name || 'chat'),
     lastMessage: c.lastMessage?.content || '',
-    time: c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '',
+    time: c.updatedAt ? formatDateRelative(c.updatedAt) : '',
     unread: false,
     online: c.participants.some(p => onlineUsers.has(p._id)),
   }));
