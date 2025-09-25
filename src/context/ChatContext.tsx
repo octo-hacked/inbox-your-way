@@ -424,17 +424,23 @@ export const ChatProvider: React.FC<{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
         body: JSON.stringify({ name, participants }),
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to create group chat');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         dispatch({ type: 'ADD_CHAT', payload: data.data });
         return data.data;
       }
@@ -442,7 +448,7 @@ export const ChatProvider: React.FC<{
       console.error('Failed to create group chat:', error);
       throw error;
     }
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, accessToken]);
 
   const deleteMessage = useCallback(async (chatId: string, messageId: string) => {
     try {
