@@ -410,7 +410,11 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
                     }`}>
                       {!isOwn && currentChat?.isGroupChat && (
                         <p className="text-xs font-medium mb-1 opacity-75">
-                          {message.sender?.username}
+                          {message.sender?._id ? (
+                            <Link to={`/profile/${encodeURIComponent(String(message.sender._id))}`}>{message.sender.username}</Link>
+                          ) : (
+                            message.sender?.username
+                          )}
                         </p>
                       )}
                       <p className="text-sm">{message.content ?? message.text ?? ''}</p>
