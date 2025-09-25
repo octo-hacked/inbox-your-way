@@ -98,7 +98,7 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
           content: p.description || p.title || p.content || "",
           likes: p.likes ?? 0,
           comments: p.comments ?? p.commentsCount ?? 0,
-          time: p.timeAgo || (p.createdAt ? new Date(p.createdAt).toLocaleString() : ""),
+          time: p.timeAgo ?? (p.createdAt ? formatDateRelative(p.createdAt) : ""),
           image: mediaUrl || p.image || postImageFor(p._id || p.id || Math.random()),
           avatar: p.uploadedBy?.avatar || avatarFor(username || "user"),
           category,
