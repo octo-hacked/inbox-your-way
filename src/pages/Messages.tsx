@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { Category } from "@/components/MainFeed";
 import { useChat } from "../context/ChatContext"; // You'll need to create this
 import { useAuth } from "@/context/AuthContext";
+import { API_BASE } from "@/lib/config";
 import { formatDistanceToNow } from "date-fns";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
