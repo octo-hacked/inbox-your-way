@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import type { FeedPost } from "@/components/MainFeed";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDateTime, formatDateRelative } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
 
