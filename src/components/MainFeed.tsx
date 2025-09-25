@@ -9,7 +9,8 @@ export type Category = "memes" | "news" | "other";
 
 export type FeedPost = {
   id: number;
-  remoteId?: string; // backend _id string when available
+  remoteId?: string; // backend _id string when available (post id)
+  uploaderId?: string; // uploadedBy._id when available (user id)
   username: string;
   content: string;
   likes: number;
