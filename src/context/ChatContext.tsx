@@ -315,24 +315,30 @@ export const ChatProvider: React.FC<{
   const fetchMessages = useCallback(async (chatId: string) => {
     try {
       const response = await fetch(`${apiBaseUrl}/chats/${chatId}/messages`, {
-        headers: { 
-          'Authorization': `Bearer ${accessToken}` 
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch messages');
       }
-      
+
       const data = await response.json();
-      
-      if (data.success) {
+
+      if (data && data.success) {
         dispatch({ type: 'SET_MESSAGES', payload: { chatId, messages: data.data } });
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     }
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, accessToken]);
 
   const sendMessage = useCallback(async (chatId: string, content: string): Promise<Message | undefined> => {
     try {
