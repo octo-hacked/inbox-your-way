@@ -184,10 +184,25 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
               {/* Post Header */}
               <div className="p-3 md:p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0 flex-grow">
-                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" /> {/* Added flex-shrink-0 */}
+                  {post.remoteId ? (
+                    <Link to={`/profile/${encodeURIComponent(String(post.remoteId))}`} className="flex items-center gap-3 min-w-0">
+                      <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    </Link>
+                  ) : (
+                    <Link to="/profile" className="flex items-center gap-3 min-w-0">
+                      <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    </Link>
+                  )}
+
                   <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-1">
-                      <span className="text-sm font-medium text-foreground truncate">{post.username}</span>
+                      {post.remoteId ? (
+                        <Link to={`/profile/${encodeURIComponent(String(post.remoteId))}`} className="text-sm font-medium text-foreground truncate">
+                          {post.username}
+                        </Link>
+                      ) : (
+                        <Link to="/profile" className="text-sm font-medium text-foreground truncate">{post.username}</Link>
+                      )}
                       {post.isVerified && <BadgeCheck className="w-4 h-4 text-accent flex-shrink-0" />}
                     </div>
                     <div className="text-xs text-muted-foreground">{post.time}</div>
