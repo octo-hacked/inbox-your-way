@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import BottomBar from "@/components/BottomBar";
 import { useAuth } from "@/context/AuthContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { useParams, Link } from "react-router-dom";
+import { API_BASE } from "@/lib/config";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/200?u=${encodeURIComponent(seed)}`;
 const coverFor = (seed: string) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/1200/300`;
