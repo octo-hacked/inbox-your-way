@@ -65,23 +65,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       setLoading(true);
-      await axios.post(
-        `${API_BASE}/users/logout`,
-        {},
-        {
-          withCredentials: true,
-          headers: state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : undefined,
+      // Only call server logout if we have a token/cookie that may need clearing
+      if (state.accessToken || state.refreshToken) {
+        try {
+          await axios.post(
+            `${API_BASE}/users/logout`,
+            {},
+            {
+              withCredentials: true,
+              headers: state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : undefined,
+            }
+          );
+        } catch (err) {
+          // ignore server-side logout errors (e.g., 401) to avoid noisy errors
+          console.warn("Logout request failed (ignored):", err);
         }
-      );
-    } catch (error) {
-      // Intentionally ignore API errors during logout; proceed with local sign-out
-      console.error("Logout request failed:", error);
+      }
     } finally {
       persist({ user: null, accessToken: null, refreshToken: null });
       toast({ title: "Logged out", description: "You have been signed out." });
       setLoading(false);
     }
-  }, [persist, state.accessToken, toast]);
+  }, [persist, state.accessToken, state.refreshToken, toast]);
 
   const signIn = useCallback(
     async ({ email, password }: { email: string; password: string }) => {
