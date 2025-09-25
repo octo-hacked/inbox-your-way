@@ -92,7 +92,7 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
         likes: c.likesCount ?? c.likes ?? 0,
         liked: Boolean(c.isLikedByUser ?? c.isLiked ?? false),
         replyCount: c.replyCount ?? c.repliesCount ?? 0,
-        timeAgo: c.timeAgo ?? (c.createdAt ? new Date(c.createdAt).toLocaleString() : ""),
+        timeAgo: c.timeAgo ?? (c.createdAt ? formatDateRelative(c.createdAt) : ""),
         raw: c,
       });
       setCommentsList((prev) => [normalize(created), ...prev]);
