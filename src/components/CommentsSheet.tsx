@@ -154,9 +154,15 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
               ) : (
                 commentsList.map((c: any) => (
                   <div key={c._id ?? c.id} className="flex items-start gap-3">
+                    {c.raw?.commentBy?._id ? (
+                    <Link to={`/profile/${encodeURIComponent(String(c.raw.commentBy._id))}`}>
+                      <img src={c.user?.avatar || avatarFor(c.user?.username || c.user || 'user')} alt={c.user?.username || c.user} className="w-7 h-7 rounded-full object-cover" />
+                    </Link>
+                  ) : (
                     <img src={c.user?.avatar || avatarFor(c.user?.username || c.user || 'user')} alt={c.user?.username || c.user} className="w-7 h-7 rounded-full object-cover" />
+                  )}
                     <div>
-                      <div className="text-sm"><span className="font-medium">{c.user?.username || c.user}</span> {c.body || c.text || c.content}</div>
+                      <div className="text-sm"><span className="font-medium">{c.user?.username ? (c.raw?.commentBy?._id ? <Link to={`/profile/${encodeURIComponent(String(c.raw.commentBy._id))}`}>{c.user.username}</Link> : c.user.username) : (c.user || '')}</span> {c.body || c.text || c.content}</div>
                       <div className="text-[10px] text-muted-foreground">{c.timeAgo || c.createdAt}</div>
                     </div>
                   </div>
