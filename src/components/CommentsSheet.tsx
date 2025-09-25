@@ -120,8 +120,22 @@ const CommentsSheet = ({ open, post, onClose }: CommentsSheetProps) => {
           </div>
 
           <div className="p-4 flex items-center gap-3">
-            <img src={post.avatar} alt={post.username} className="w-8 h-8 rounded-full object-cover" />
-            <div className="text-sm font-medium">{post.username}</div>
+            {post.remoteId ? (
+              <Link to={`/profile/${encodeURIComponent(String(post.remoteId))}`} className="flex items-center">
+                <img src={post.avatar} alt={post.username} className="w-8 h-8 rounded-full object-cover" />
+              </Link>
+            ) : (
+              <Link to="/profile" className="flex items-center">
+                <img src={post.avatar} alt={post.username} className="w-8 h-8 rounded-full object-cover" />
+              </Link>
+            )}
+            <div className="text-sm font-medium">
+              {post.remoteId ? (
+                <Link to={`/profile/${encodeURIComponent(String(post.remoteId))}`}>{post.username}</Link>
+              ) : (
+                <Link to="/profile">{post.username}</Link>
+              )}
+            </div>
             <div className="ml-auto text-xs text-muted-foreground">{post.time}</div>
           </div>
           <div className="px-4">
