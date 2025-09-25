@@ -346,37 +346,43 @@ export const ChatProvider: React.FC<{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
         body: JSON.stringify({ content }),
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to send message');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         dispatch({ type: 'ADD_MESSAGE', payload: { chatId, message: data.data } });
-        
+
         // Update chat's lastMessage and move to top
-        const updatedChats = state.chats.map(chat => 
-          chat._id === chatId 
+        const updatedChats = state.chats.map(chat =>
+          chat._id === chatId
             ? { ...chat, lastMessage: data.data, updatedAt: data.data.createdAt }
             : chat
         );
-        
+
         // Sort chats by updatedAt
         updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         dispatch({ type: 'SET_CHATS', payload: updatedChats });
-        
+
         return data.data;
       }
     } catch (error) {
       console.error('Failed to send message:', error);
       throw error;
     }
-  }, [apiBaseUrl, state.chats]);
+  }, [apiBaseUrl, state.chats, accessToken]);
 
   const createDirectChat = useCallback(async (userId: string): Promise<Chat | undefined> => {
     try {
