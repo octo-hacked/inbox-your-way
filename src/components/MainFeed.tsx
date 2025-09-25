@@ -2,6 +2,7 @@ import { Heart, MessageCircle, Share2, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { formatDateTime, formatDateRelative } from "@/lib/utils";
 
 export type Category = "memes" | "news" | "other";
 
