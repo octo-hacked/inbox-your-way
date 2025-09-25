@@ -152,9 +152,23 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         <ScrollArea className="flex-1 inbox-scroll">
           <div className="p-4 space-y-4">
             <div className="flex items-center gap-3">
-              <img src={postPreview.avatar} alt={`${postPreview.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+              {postPreview.remoteId ? (
+                <Link to={`/profile/${encodeURIComponent(String(postPreview.remoteId))}`} className="flex items-center">
+                  <img src={postPreview.avatar} alt={`${postPreview.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+                </Link>
+              ) : (
+                <Link to="/profile" className="flex items-center">
+                  <img src={postPreview.avatar} alt={`${postPreview.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+                </Link>
+              )}
               <div>
-                <div className="text-sm font-medium text-foreground">{postPreview.username}</div>
+                <div className="text-sm font-medium text-foreground">
+                  {postPreview.remoteId ? (
+                    <Link to={`/profile/${encodeURIComponent(String(postPreview.remoteId))}`}>{postPreview.username}</Link>
+                  ) : (
+                    <Link to="/profile">{postPreview.username}</Link>
+                  )}
+                </div>
                 <div className="text-xs text-muted-foreground">{postPreview.time}</div>
               </div>
             </div>
