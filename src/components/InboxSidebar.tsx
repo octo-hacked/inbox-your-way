@@ -291,8 +291,8 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         <ScrollArea className="flex-1 inbox-scroll">
           <div className="p-4 space-y-4">
             <div className="flex items-center gap-3">
-              {postToShare.remoteId ? (
-                <Link to={`/profile/${encodeURIComponent(String(postToShare.remoteId))}`} className="flex items-center">
+              {postToShare.uploaderId ? (
+                <Link to={`/profile/${encodeURIComponent(String(postToShare.uploaderId))}`} className="flex items-center">
                   <img src={postToShare.avatar} alt={`${postToShare.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
                 </Link>
               ) : (
@@ -301,8 +301,8 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
                 </Link>
               )}
               <div>
-                <div className="text-sm font-medium text-foreground">{postToShare.remoteId ? (
-                  <Link to={`/profile/${encodeURIComponent(String(postToShare.remoteId))}`}>{postToShare.username}</Link>
+                <div className="text-sm font-medium text-foreground">{postToShare.uploaderId ? (
+                  <Link to={`/profile/${encodeURIComponent(String(postToShare.uploaderId))}`}>{postToShare.username}</Link>
                 ) : (
                   <Link to="/profile">{postToShare.username}</Link>
                 )}</div>
