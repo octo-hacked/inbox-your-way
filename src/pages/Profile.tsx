@@ -98,20 +98,20 @@ export default function Profile() {
           <div className="min-h-full pb-24">
             <div className="w-full h-40 md:h-48 bg-muted relative">
               <img src={display.cover} alt="Cover" className="w-full h-full object-cover" />
-              <div className="absolute -bottom-10 left-4 flex items-end gap-4">
+              <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2">
                 <img
                   src={display.avatar}
                   alt={display.name}
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-full ring-4 ring-background object-cover"
+                  className="w-24 h-24 md:w-32 md:h-32 rounded-full ring-4 ring-background object-cover"
                 />
-                <div className="pb-2">
-                  <div className="text-lg md:text-xl font-semibold text-foreground leading-tight">{display.name}</div>
+                <div className="text-center">
+                  <div className="text-lg md:text-2xl font-semibold text-foreground leading-tight">{display.name}</div>
                   <div className="text-sm text-muted-foreground">@{display.username}</div>
                 </div>
               </div>
-            </div>
+            </div>"
 
-            <div className="px-4 md:px-6 mt-12">
+            <div className="px-4 md:px-6 mt-20">
               <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                 <div className="text-sm text-muted-foreground max-w-prose">{display.bio}</div>
                 <div className="md:ml-auto flex gap-2">
