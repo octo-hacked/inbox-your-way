@@ -8,6 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ImageIcon, PlaySquare, Upload } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { createPost } from "@/lib/posts";
 
 // Allowed post types
 export type PostType = "normal" | "reel";
@@ -295,6 +298,11 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [category, setCategory] = useState<string>("other");
+  const [isCreating, setIsCreating] = useState(false);
+
+  const { accessToken } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!file) {
@@ -318,6 +326,7 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
     setTitle("");
     setDescription("");
     setPreviewUrl("");
+    setCategory("other");
   };
 
   const onOpenChange = (v: boolean) => {
@@ -336,6 +345,48 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
       <Upload className="w-4 h-4 mr-2" /> Create Post
     </Button>
   );
+
+  const handleCreate = async () => {
+    // Build FormData and submit
+    try {
+      setIsCreating(true);
+      const form = new FormData();
+      if (title) form.append("title", title);
+      if (description) form.append("description", description);
+
+      // contentType: prefer media type if present, otherwise text
+      let contentType = "text";
+      if (mediaType === "image") contentType = "image";
+      else if (mediaType === "video") contentType = "video";
+      form.append("contentType", contentType);
+
+      // append category
+      if (category) form.append("category", category);
+
+      // isLowDopamine default false
+      form.append("isLowDopamine", String(false));
+
+      // Append media: prefer cropped preview if available (data URL), otherwise original file
+      if (previewUrl && previewUrl.startsWith("data:")) {
+        // convert data url to blob
+        const res = await fetch(previewUrl);
+        const blob = await res.blob();
+        form.append("media", blob, `image.jpg`);
+      } else if (file) {
+        form.append("media", file, (file as File).name);
+      }
+
+      await createPost(form, accessToken ?? undefined);
+      toast({ title: "Post created", description: "Your post was uploaded." });
+      reset();
+      setOpen(false);
+    } catch (err: any) {
+      console.error("Create post failed:", err);
+      toast({ title: "Upload failed", description: err?.message || "Unable to create post.", variant: "destructive" });
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -447,6 +498,19 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
                 <Label htmlFor="desc">Description</Label>
                 <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Write a description" rows={4} />
               </div>
+
+              <div className="grid gap-1">
+                <Label htmlFor="category">Category</Label>
+                <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="px-3 py-2 rounded-md bg-background border border-border">
+                  <option value="news">news</option>
+                  <option value="memes">memes</option>
+                  <option value="other">other</option>
+                  <option value="tech">tech</option>
+                  <option value="lifestyle">lifestyle</option>
+                  <option value="entertainment">entertainment</option>
+                  <option value="sports">sports</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex justify-between gap-2">
@@ -484,9 +548,13 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
               <Label>Description</Label>
               <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{description || "(No description)"}</div>
             </div>
+            <div className="grid gap-1">
+              <Label>Category</Label>
+              <div className="text-sm text-foreground break-words">{category}</div>
+            </div>
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setStep(3)}>Back</Button>
-              <Button onClick={() => { reset(); setOpen(false); }}>Done</Button>
+              <Button onClick={handleCreate} disabled={isCreating}>{isCreating ? "Uploading..." : "Done"}</Button>
             </div>
           </div>
         )}
