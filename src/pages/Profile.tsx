@@ -116,11 +116,54 @@ export default function Profile() {
             <div className="px-4 md:px-6 mt-20">
               <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                 <div className="text-sm text-muted-foreground max-w-prose">{display.bio}</div>
-                <div className="md:ml-auto flex gap-2">
+                <div className="md:ml-auto flex gap-2 items-center">
                   <Button variant="outline">Share Profile</Button>
+
                   {display.id === (user?.id ?? user?._id) ? (
                     <Link to="/profile/edit"><Button>Edit Profile</Button></Link>
-                  ) : null}
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="default">Connect</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Connect with {display.name}</DialogTitle>
+                            <DialogDescription className="text-sm text-muted-foreground">Choose how you'd like to reach out.</DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-3 mt-2">
+                            <Button onClick={() => { navigate(`/messages?user=${encodeURIComponent(String(display.id))}`); }}>
+                              Message
+                            </Button>
+                            {display.email ? (
+                              <a href={`mailto:${display.email}`} className="w-full">
+                                <Button variant="outline" className="w-full">Email</Button>
+                              </a>
+                            ) : null}
+                            <Button variant="ghost" onClick={() => { navigator.clipboard?.writeText(window.location.href); toast({ title: "Link copied", description: "Profile link copied to clipboard." }); }}>
+                              Copy Profile Link
+                            </Button>
+                          </div>
+                          <DialogFooter>
+                            <Button variant="outline">Close</Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Button onClick={() => {
+                        // toggle follow locally
+                        setIsFollowing((v) => {
+                          const next = !v;
+                          setDisplayStats((s) => ({ ...s, followers: s.followers + (next ? 1 : -1) }));
+                          toast({ title: next ? "Followed" : "Unfollowed", description: next ? `You're now following ${display.name}` : `You unfollowed ${display.name}` });
+                          return next;
+                        });
+                      }}>
+                        {isFollowing ? 'Following' : 'Follow'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
