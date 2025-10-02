@@ -4,8 +4,10 @@ import BottomBar from "@/components/BottomBar";
 import { useAuth } from "@/context/AuthContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_BASE } from "@/lib/config";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/200?u=${encodeURIComponent(seed)}`;
 const coverFor = (seed: string) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/1200/300`;
