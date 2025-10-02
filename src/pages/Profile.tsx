@@ -179,9 +179,9 @@ export default function Profile() {
               </div>
 
               <div className="flex items-center gap-6 mt-4 text-sm">
-                <div><span className="font-semibold text-foreground">{display.stats.posts}</span> posts</div>
-                <div><span className="font-semibold text-foreground">{display.stats.followers}</span> followers</div>
-                <div><span className="font-semibold text-foreground">{display.stats.following}</span> following</div>
+                <div><span className="font-semibold text-foreground">{displayStats.posts}</span> posts</div>
+                <div><span className="font-semibold text-foreground">{displayStats.followers}</span> followers</div>
+                <div><span className="font-semibold text-foreground">{displayStats.following}</span> following</div>
                 <div className="ml-auto text-muted-foreground">{display.email}</div>
               </div>
 
