@@ -124,19 +124,18 @@ export default function Profile() {
               </div>
             </div>"
 
-            <div className="px-4 md:px-6 mt-20">
-              <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                <div className="text-sm text-muted-foreground max-w-prose">{display.bio}</div>
-                <div className="md:ml-auto flex gap-2 items-center">
-                  <Button variant="outline">Share Profile</Button>
+            <div className="px-4 md:px-6 mt-6">
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-sm text-muted-foreground text-center max-w-prose">{display.bio}</div>
 
+                <div className="flex items-center gap-4">
                   {display.id === (user?.id ?? user?._id) ? (
                     <Link to="/profile/edit"><Button>Edit Profile</Button></Link>
                   ) : (
-                    <div className="flex items-center gap-2">
+                    <>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="default">Connect</Button>
+                          <Button variant="outline">Connect</Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
@@ -162,8 +161,12 @@ export default function Profile() {
                         </DialogContent>
                       </Dialog>
 
+                      <div className="text-center">
+                        <div className="text-lg md:text-2xl font-semibold text-foreground">{display.name}</div>
+                        <div className="text-sm text-muted-foreground">@{display.username}</div>
+                      </div>
+
                       <Button onClick={() => {
-                        // toggle follow locally
                         setIsFollowing((v) => {
                           const next = !v;
                           setDisplayStats((s) => ({ ...s, followers: s.followers + (next ? 1 : -1) }));
@@ -173,16 +176,17 @@ export default function Profile() {
                       }}>
                         {isFollowing ? 'Following' : 'Follow'}
                       </Button>
-                    </div>
+                    </>
                   )}
                 </div>
-              </div>
 
-              <div className="flex items-center gap-6 mt-4 text-sm">
-                <div><span className="font-semibold text-foreground">{displayStats.posts}</span> posts</div>
-                <div><span className="font-semibold text-foreground">{displayStats.followers}</span> followers</div>
-                <div><span className="font-semibold text-foreground">{displayStats.following}</span> following</div>
-                <div className="ml-auto text-muted-foreground">{display.email}</div>
+                <div className="flex items-center gap-6 mt-2 text-sm">
+                  <div><span className="font-semibold text-foreground">{displayStats.posts}</span> posts</div>
+                  <div><span className="font-semibold text-foreground">{displayStats.followers}</span> followers</div>
+                  <div><span className="font-semibold text-foreground">{displayStats.following}</span> following</div>
+                </div>
+
+                <div className="text-sm text-muted-foreground mt-2">{display.email}</div>
               </div>
 
               <div className="h-px w-full bg-border my-6" />
