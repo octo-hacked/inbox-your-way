@@ -73,6 +73,17 @@ export default function Profile() {
 
   const allCats = ["memes", "news", "other"] as const;
 
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [displayStats, setDisplayStats] = useState(display?.stats ?? { posts: 0, followers: 0, following: 0 });
+
+  useEffect(() => {
+    if (!display) return;
+    setIsFollowing(Boolean(profile?.isFollowing ?? false));
+    setDisplayStats(display.stats);
+  }, [display, profile]);
+
   if (loading) {
     return <div className="flex items-center justify-center h-40">Loading...</div>;
   }
