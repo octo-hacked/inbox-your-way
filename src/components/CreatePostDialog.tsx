@@ -376,7 +376,7 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
         form.append("media", file, (file as File).name);
       }
 
-      await createPost(form, accessToken ?? undefined);
+      await createPost(form, accessToken ?? undefined, category);
       toast({ title: "Post created", description: "Your post was uploaded." });
       reset();
       setOpen(false);

@@ -118,10 +118,12 @@ export async function getPost(postId: string, token?: string | null) {
   return request(url, { method: "GET", headers, credentials: "include" });
 }
 
-export async function createPost(form: FormData, token?: string | null) {
+export async function createPost(form: FormData, token?: string | null, category?: string | null) {
   const url = `${API_BASE}/posts/create`;
   const headers: Record<string,string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
+  // ensure category is present on form
+  if (category && !form.has("category")) form.append("category", category);
   // DO NOT set content-type; browser will set multipart boundary
   return request(url, { method: "POST", body: form, headers, credentials: "include" });
 }
