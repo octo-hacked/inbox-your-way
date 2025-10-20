@@ -1,5 +1,5 @@
-import { Heart, MessageCircle, Share2, BadgeCheck, ArrowLeft } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Heart, MessageCircle, Share2, BadgeCheck, MoreHorizontal, ArrowLeft } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { Category, FeedPost } from "@/components/MainFeed";
 
 export type Reel = {
@@ -29,322 +29,254 @@ type ReelsFeedProps = {
   onBack?: () => void;
 };
 
-const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamineOnly, onBack }: ReelsFeedProps) => {
-  const [reels, setReels] = useState<Reel[]>([
-    {
-      id: 101,
-      username: "reels_sarah",
-      description: "Mindful tech tip: set a timer before scrolling.",
-      likes: 230,
-      comments: 12,
-      time: "2h",
-      video: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-      poster: posterFor("reel-sarah"),
-      avatar: avatarFor("reels_sarah"),
-      category: "news",
-      lowDopamine: true,
-      isVerified: true,
-    },
-    {
-      id: 102,
-      username: "alex_reels",
-      description: "Weekend vibes and focus tips.",
-      likes: 450,
-      comments: 28,
-      time: "4h",
-      video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-      poster: posterFor("reel-alex"),
-      avatar: avatarFor("alex_reels"),
-      category: "other",
-      lowDopamine: false,
-      isVerified: false,
-    },
-    {
-      id: 103,
-      username: "jordan_reels",
-      description: "Minimalist workspace tour.",
-      likes: 180,
-      comments: 9,
-      time: "6h",
-      video: "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-      poster: posterFor("reel-jordan"),
-      avatar: avatarFor("jordan_reels"),
-      category: "memes",
-      lowDopamine: false,
-      isVerified: false,
-    },
-    {
-      id: 104,
-      username: "emma_reels",
-      description: "Intentional design = better habits.",
-      likes: 310,
-      comments: 18,
-      time: "8h",
-      video: "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-      poster: posterFor("reel-emma"),
-      avatar: avatarFor("emma_reels"),
-      category: "news",
-      lowDopamine: true,
-      isVerified: true,
-    },
-  ]);
+const SAMPLE_REELS: Reel[] = [
+  {
+    id: 101,
+    username: "reels_sarah",
+    description: "Mindful tech tip: set a timer before scrolling.",
+    likes: 230,
+    comments: 12,
+    time: "2h",
+    video: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    poster: posterFor("reel-sarah"),
+    avatar: avatarFor("reels_sarah"),
+    category: "news",
+    lowDopamine: true,
+    isVerified: true,
+  },
+  {
+    id: 102,
+    username: "alex_reels",
+    description: "Weekend vibes and focus tips.",
+    likes: 450,
+    comments: 28,
+    time: "4h",
+    video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    poster: posterFor("reel-alex"),
+    avatar: avatarFor("alex_reels"),
+    category: "other",
+    lowDopamine: false,
+    isVerified: false,
+  },
+  {
+    id: 103,
+    username: "jordan_reels",
+    description: "Minimalist workspace tour.",
+    likes: 180,
+    comments: 9,
+    time: "6h",
+    video: "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    poster: posterFor("reel-jordan"),
+    avatar: avatarFor("jordan_reels"),
+    category: "memes",
+    lowDopamine: false,
+    isVerified: false,
+  },
+  {
+    id: 104,
+    username: "emma_reels",
+    description: "Intentional design = better habits.",
+    likes: 310,
+    comments: 18,
+    time: "8h",
+    video: "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+    poster: posterFor("reel-emma"),
+    avatar: avatarFor("emma_reels"),
+    category: "news",
+    lowDopamine: true,
+    isVerified: true,
+  },
+];
 
-  const toggleLike = (id: number) => {
-    setReels((prev) => prev.map((r) => (r.id === id ? { ...r, liked: !r.liked, likes: r.liked ? Math.max(0, r.likes - 1) : r.likes + 1 } : r)));
-  };
+const ReelsFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamineOnly, onBack }: ReelsFeedProps) => {
+  const [reels, setReels] = useState<Reel[]>(SAMPLE_REELS);
+  const [mutedByDefault] = useState(true);
 
   const activeCategories: Category[] = selectedCategories && selectedCategories.length > 0 ? selectedCategories : ["memes", "news", "other"];
   const onlyLow = Boolean(lowDopamineOnly);
   const visibleReels = reels.filter((r) => activeCategories.includes(r.category) && (!onlyLow || r.lowDopamine));
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const current = visibleReels[currentIndex] || null;
-  const prevIndexRef = useRef<number>(-1);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
+  const [visibleIndex, setVisibleIndex] = useState(0);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  const [leaving, setLeaving] = useState<Reel | null>(null);
-  const [phase, setPhase] = useState<"start" | "end" | null>(null);
-  const [dir, setDir] = useState<"next" | "prev" | null>(null);
-
-  // responsive reel height for mobile full-bleed
-  const [reelHeight, setReelHeight] = useState<number>(() => Math.round(window.innerHeight * 0.8));
-  useEffect(() => {
-    const update = () => {
-      const isMobile = window.innerWidth < 768;
-      const bottomBar = isMobile ? 56 : 0; // BottomBar height
-      const margin = isMobile ? 12 : Math.round(window.innerHeight * 0.1);
-      const h = Math.max(420, Math.min(window.innerHeight - bottomBar - margin, isMobile ? window.innerHeight : Math.round(window.innerHeight * 0.82)));
-      setReelHeight(h);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  useEffect(() => {
-    if (currentIndex > visibleReels.length - 1) {
-      setCurrentIndex(Math.max(0, visibleReels.length - 1));
+  // Prefetch next N videos
+  const prefetch = useCallback((index: number) => {
+    for (let i = index + 1; i <= index + 2; i++) {
+      const reel = visibleReels[i];
+      if (!reel) continue;
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "video";
+      link.href = reel.video;
+      document.head.appendChild(link);
     }
-  }, [visibleReels.length]);
+  }, [visibleReels]);
 
   useEffect(() => {
-    const prev = prevIndexRef.current;
-    if (prev !== currentIndex) {
-      const prevId = visibleReels[prev]?.id;
-      if (typeof prevId !== "undefined") {
-        const pv = document.getElementById(`reel-video-${prevId}`) as HTMLVideoElement | null;
-        pv?.pause();
-      }
-      const currId = current?.id;
-      if (typeof currId !== "undefined") {
-        const cv = document.getElementById(`reel-video-${currId}`) as HTMLVideoElement | null;
-        cv?.play?.();
-      }
-      prevIndexRef.current = currentIndex;
-    }
-  }, [currentIndex, current?.id, visibleReels]);
+    const el = containerRef.current;
+    if (!el) return;
 
-  const go = (next: boolean) => {
-    setCurrentIndex((i) => {
-      const n = next ? Math.min(visibleReels.length - 1, i + 1) : Math.max(0, i - 1);
-      if (n === i) return i;
-      setLeaving(visibleReels[i] || null);
-      setDir(next ? "next" : "prev");
-      setPhase("start");
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setPhase("end"));
+    // Ensure scroll-snap
+    el.style.scrollSnapType = "y mandatory";
+    el.style.overflowY = "auto";
+
+    // Intersection observer for autoplay
+    observerRef.current = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const idx = Number(entry.target.getAttribute("data-index"));
+        const vidId = entry.target.getAttribute("data-vid-id");
+        const video = vidId ? document.getElementById(vidId) as HTMLVideoElement | null : null;
+        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          setVisibleIndex(idx);
+          // play this video
+          try { video?.play(); } catch {}
+          // pause others
+          Object.keys(videoRefs.current).forEach((k) => {
+            const n = Number(k);
+            if (n !== idx) videoRefs.current[n]?.pause();
+          });
+          prefetch(idx);
+        } else {
+          // when out of view pause
+          try { if (video && !entry.isIntersecting) video.pause(); } catch {}
+        }
       });
-      const total = 450;
-      window.setTimeout(() => {
-        setLeaving(null);
-        setPhase(null);
-      }, total);
-      return n;
-    });
+    }, { threshold: [0.6] });
+
+    const items = Array.from(el.querySelectorAll('[data-reel-item]')) as HTMLElement[];
+    items.forEach((it) => observerRef.current?.observe(it));
+
+    return () => {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+    };
+  }, [visibleReels, prefetch]);
+
+  useEffect(() => {
+    // when visibleIndex changes ensure muted state default
+    const vid = videoRefs.current[visibleIndex];
+    if (vid) {
+      vid.muted = mutedByDefault;
+      vid.loop = true;
+      vid.playsInline = true;
+    }
+  }, [visibleIndex, mutedByDefault]);
+
+  const toggleMute = (idx: number) => {
+    const v = videoRefs.current[idx];
+    if (!v) return;
+    v.muted = !v.muted;
   };
 
-  const wheelLock = useRef<number>(0);
-  const touchStartY = useRef<number | null>(null);
-  const touchDeltaY = useRef<number>(0);
+  const togglePlay = (idx: number) => {
+    const v = videoRefs.current[idx];
+    if (!v) return;
+    if (v.paused) v.play(); else v.pause();
+  };
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-        e.preventDefault();
-        go(true);
-      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-        e.preventDefault();
-        go(false);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [visibleReels.length]);
+  const handleClick = (e: React.MouseEvent, idx: number) => {
+    // clicking anywhere toggles play/pause; clicking right action bar shouldn't toggle
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-action]')) return;
+    togglePlay(idx);
+  };
+
+  const handleComment = (e: React.MouseEvent, reel: Reel) => {
+    const vidEl = videoRefs.current[visibleReels.indexOf(reel)];
+    const rect = vidEl ? vidEl.getBoundingClientRect() : new DOMRect(0,0,0,0);
+    if (onOpenComments) onOpenComments({ id: reel.id, username: reel.username, content: reel.description, likes: reel.likes, comments: reel.comments, time: reel.time, image: reel.poster, avatar: reel.avatar, category: reel.category, lowDopamine: reel.lowDopamine, isVerified: reel.isVerified, liked: reel.liked }, rect);
+  };
+
+  // responsive max width
+  const containerClass = "w-full h-screen flex flex-col items-center justify-start bg-black text-white";
 
   return (
-    <div className="flex-1 h-screen relative flex items-stretch justify-center">
+    <div className={`flex-1 relative flex items-center justify-center`}>
       <div className="absolute top-4 left-4 z-20">
         <button onClick={onBack} className="flex items-center gap-2 px-3 py-1.5 rounded bg-black/50 text-white text-sm hover:bg-black/60">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
       </div>
-      {!current ? (
-        <div className="text-muted-foreground text-sm">No reels match the selected filters.</div>
-      ) : (
-        (() => {
-          const reel = current;
-          const feedPost: FeedPost = {
-            id: reel.id,
-            username: reel.username,
-            content: reel.description,
-            likes: reel.likes,
-            comments: reel.comments,
-            time: reel.time,
-            image: reel.poster,
-            avatar: reel.avatar,
-            category: reel.category,
-            lowDopamine: reel.lowDopamine,
-            isVerified: reel.isVerified,
-            liked: reel.liked,
-          };
 
-          const enterFrom = dir === "next" ? 40 : -40;
-          const leaveTo = dir === "next" ? -40 : 40;
-          const transition = "transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 450ms ease";
-
+      <div ref={containerRef} className={`${containerClass} snap-y snap-mandatory`} style={{ maxWidth: 600, margin: "0 auto" }}>
+        {visibleReels.map((reel, idx) => {
+          const isVisible = idx === visibleIndex;
           return (
             <div
-              className="relative w-full max-w-[480px] md:w-[380px]"
-              style={{ height: reelHeight, touchAction: "pan-y" }}
-              onWheel={(e) => {
-                const now = Date.now();
-                if (now - wheelLock.current < 500) return;
-                if (e.deltaY > 10) { wheelLock.current = now; go(true); }
-                else if (e.deltaY < -10) { wheelLock.current = now; go(false); }
-              }}
-              onTouchStart={(e) => { touchStartY.current = e.touches[0].clientY; touchDeltaY.current = 0; }}
-              onTouchMove={(e) => { if (touchStartY.current != null) touchDeltaY.current = e.touches[0].clientY - touchStartY.current; }}
-              onTouchEnd={() => {
-                const dy = touchDeltaY.current;
-                touchStartY.current = null;
-                touchDeltaY.current = 0;
-                if (Math.abs(dy) < 40) return;
-                if (dy < 0) go(true); else go(false);
-              }}
+              key={reel.id}
+              data-reel-item
+              data-index={idx}
+              data-vid-id={`reel-video-${reel.id}`}
+              className="snap-start w-full flex items-center justify-center"
+              style={{ height: '100vh', scrollSnapAlign: 'start', padding: '12px' }}
+              onClick={(e) => handleClick(e, idx)}
             >
-              {leaving && (
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    transition,
-                    transform: phase === "start" ? "translateY(0px)" : `translateY(${leaveTo}px)`,
-                    opacity: phase === "start" ? 1 : 0,
-                  }}
-                >
-                  <div data-reel-card className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-lg">
-                    <video
-                      id={`reel-video-${leaving.id}`}
-                      data-reel
-                      src={leaving.video}
-                      poster={leaving.poster}
-                      className="w-full h-full object-cover"
-                      muted
-                      loop
-                      playsInline
-                    />
-                    <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4 text-white">
-                      <button aria-label="Like" className={`p-2 rounded-full bg-black/40 ${leaving.liked ? "text-red-500" : "text-white"}`}>
-                        <Heart className={`w-6 h-6 ${leaving.liked ? "stroke-red-500 fill-red-500" : ""}`} />
-                      </button>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 pb-16 md:pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
-                      <div className="flex items-center gap-2 mb-1">
-                        <img src={leaving.avatar} className="w-8 h-8 rounded-full object-cover" alt={leaving.username} />
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm font-medium">{leaving.username}</span>
-                          {leaving.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
-                        </div>
-                        <span className="ml-auto text-xs opacity-80">{leaving.time}</span>
-                      </div>
-                      <p className="text-sm leading-tight opacity-95 line-clamp-3">{leaving.description}</p>
-                    </div>
-                  </div>
+              <div className="relative w-full max-w-[600px] h-[90vh] rounded-xl overflow-hidden bg-black shadow-lg">
+                <video
+                  id={`reel-video-${reel.id}`}
+                  ref={(el) => (videoRefs.current[idx] = el)}
+                  poster={reel.poster}
+                  // don't set src until near viewport to allow lazy
+                  src={isVisible ? reel.video : undefined}
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                  playsInline
+                  preload={isVisible ? 'auto' : 'metadata'}
+                />
+
+                {/* Right action bar */}
+                <div className="absolute right-3 bottom-24 flex flex-col items-center gap-4 text-white z-10">
+                  <button data-action aria-label="Like" onClick={() => toggleLike(reel.id)} className={`flex flex-col items-center gap-1`}>
+                    <Heart className={`w-8 h-8 ${reel.liked ? 'text-red-500' : 'text-white'}`} />
+                    <span className="text-xs">{reel.likes}</span>
+                  </button>
+                  <button data-action aria-label="Comment" onClick={(e) => handleComment(e, reel)} className="flex flex-col items-center gap-1">
+                    <MessageCircle className="w-8 h-8 text-white" />
+                    <span className="text-xs">{reel.comments}</span>
+                  </button>
+                  <button data-action aria-label="Share" onClick={(e) => { const rect = (videoRefs.current[idx])?.getBoundingClientRect() ?? new DOMRect(0,0,0,0); if (onOpenShare) onOpenShare({ id: reel.id, username: reel.username, content: reel.description, likes: reel.likes, comments: reel.comments, time: reel.time, image: reel.poster, avatar: reel.avatar, category: reel.category, lowDopamine: reel.lowDopamine, isVerified: reel.isVerified, liked: reel.liked }, rect); }} className="flex flex-col items-center gap-1">
+                    <Share2 className="w-8 h-8 text-white" />
+                    <span className="text-xs">Share</span>
+                  </button>
+                  <button data-action aria-label="More" className="flex flex-col items-center gap-1">
+                    <MoreHorizontal className="w-6 h-6 text-white" />
+                  </button>
                 </div>
-              )}
 
-              <div
-                className="absolute inset-0"
-                style={{
-                  transition,
-                  transform: phase === "start" ? `translateY(${enterFrom}px)` : "translateY(0px)",
-                  opacity: phase === "start" ? 0 : 1,
-                }}
-              >
-                <div key={reel.id} data-reel-card className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-lg">
-                  <video
-                    id={`reel-video-${reel.id}`}
-                    data-reel
-                    src={reel.video}
-                    poster={reel.poster}
-                    className="w-full h-full object-cover"
-                    muted
-                    loop
-                    playsInline
-                    autoPlay
-                  />
-
-                  <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4">
-                    <button
-                      aria-label="Like"
-                      onClick={() => toggleLike(reel.id)}
-                      className={`p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors ${reel.liked ? "text-red-500" : "text-white"}`}
-                    >
-                      <Heart className={`w-6 h-6 ${reel.liked ? "stroke-red-500 fill-red-500" : ""}`} />
-                    </button>
-                    <button
-                      aria-label="Comment"
-                      onClick={(e) => {
-                        const vidEl = document.getElementById(`reel-video-${reel.id}`);
-                        const cardEl = (e.currentTarget as HTMLElement).closest('[data-reel-card]') as HTMLElement | null;
-                        const rect = (vidEl || cardEl)?.getBoundingClientRect();
-                        if (rect && onOpenComments) onOpenComments(feedPost, rect);
-                        else if (onOpenComments) onOpenComments(feedPost, new DOMRect(0, 0, 0, 0));
-                      }}
-                      className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white"
-                    >
-                      <MessageCircle className="w-6 h-6" />
-                    </button>
-                    <button
-                      aria-label="Share"
-                      onClick={(e) => {
-                        const vidEl = document.getElementById(`reel-video-${reel.id}`);
-                        const cardEl = (e.currentTarget as HTMLElement).closest('[data-reel-card]') as HTMLElement | null;
-                        const rect = (vidEl || cardEl)?.getBoundingClientRect();
-                        if (rect && onOpenShare) onOpenShare(feedPost, rect);
-                        else if (onOpenShare) onOpenShare(feedPost, new DOMRect(0, 0, 0, 0));
-                      }}
-                      className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white"
-                    >
-                      <Share2 className="w-6 h-6" />
-                    </button>
-                  </div>
-
-                  <div className="absolute bottom-0 left-0 right-0 p-4 pb-16 md:pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
-                    <div className="flex items-center gap-2 mb-1">
-                      <img src={reel.avatar} className="w-8 h-8 rounded-full object-cover" alt={reel.username} />
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm font-medium">{reel.username}</span>
+                {/* Bottom overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10">
+                  <div className="flex items-center gap-3">
+                    <img src={reel.avatar} alt={reel.username} className="w-10 h-10 rounded-full object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold truncate">{reel.username}</span>
                         {reel.isVerified && <BadgeCheck className="w-4 h-4 text-accent" />}
+                        <button className="ml-2 text-sm px-2 py-1 rounded bg-white text-black">Follow</button>
                       </div>
-                      <span className="ml-auto text-xs opacity-80">{reel.time}</span>
+                      <div className="text-sm text-muted-foreground truncate max-w-full">{reel.description}</div>
                     </div>
-                    <p className="text-sm leading-tight opacity-95 line-clamp-3">{reel.description}</p>
+                    <div className="flex flex-col items-center ml-3">
+                      <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center text-xs">♫</div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Center overlay controls (play/pause, volume) */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="opacity-0 hover:opacity-100 pointer-events-auto transition-opacity">
+                    <button onClick={() => togglePlay(idx)} className="bg-black/50 p-3 rounded-full text-white pointer-events-auto">Play</button>
+                    <button onClick={() => toggleMute(idx)} className="ml-2 bg-black/50 p-3 rounded-full text-white pointer-events-auto">Sound</button>
+                  </div>
+                </div>
+
               </div>
             </div>
           );
-        })()
-      )}
+        })}
+      </div>
     </div>
   );
 };
