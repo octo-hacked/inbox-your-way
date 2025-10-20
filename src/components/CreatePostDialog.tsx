@@ -304,6 +304,37 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
   const { accessToken } = useAuth();
   const { toast } = useToast();
 
+  const DRAFT_KEY = "createPost.draft.v1";
+
+  // Restore draft from localStorage so transient remounts don't lose user input
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed.title) setTitle(parsed.title);
+      if (parsed.description) setDescription(parsed.description);
+      if (parsed.category) setCategory(parsed.category);
+      if (parsed.postType) setPostType(parsed.postType as PostType);
+      if (parsed.step) setStep(parsed.step as 1 | 2 | 3 | 4);
+      if (parsed.previewUrl) setPreviewUrl(parsed.previewUrl);
+    } catch (e) {
+      // ignore
+    }
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist draft on changes
+  useEffect(() => {
+    try {
+      const draft = { title, description, category, postType, step, previewUrl };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {
+      // ignore
+    }
+  }, [title, description, category, postType, step, previewUrl]);
+
   useEffect(() => {
     if (!file) {
       setFileUrl("");
@@ -327,6 +358,11 @@ export default function CreatePostDialog({ children }: { children?: React.ReactN
     setDescription("");
     setPreviewUrl("");
     setCategory("other");
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (e) {
+      // ignore
+    }
   };
 
   const onOpenChange = (v: boolean) => {
