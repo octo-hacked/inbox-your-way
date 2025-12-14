@@ -76,10 +76,10 @@ const Landing = () => {
       {/* Features Grid */}
       <section className="bg-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center mb-16">
             {/* Features Grid - Left Side */}
-            <div className="lg:col-span-2 bg-white rounded-lg p-8">
-              <div className="grid grid-cols-2 gap-8 mb-8">
+            <div className="lg:col-span-3 bg-white rounded-lg p-8">
+              <div className="grid grid-cols-2 gap-12">
                 {[
                   { Icon: Heart, title: "DIGITAL WELLNESS" },
                   { Icon: Brain, title: "FOCUS MODE" },
@@ -90,23 +90,23 @@ const Landing = () => {
                     <div className="flex justify-center mb-4">
                       <feature.Icon className="w-12 h-12 text-gray-800 stroke-1" />
                     </div>
-                    <h3 className="font-bold text-sm text-gray-900">{feature.title}</h3>
+                    <h3 className="font-bold text-xs text-gray-900 whitespace-nowrap">{feature.title}</h3>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-center">
+              <div className="flex justify-center mt-12">
                 <div className="text-center">
                   <Hourglass className="w-12 h-12 text-gray-800 stroke-1 mx-auto mb-4" />
-                  <h3 className="font-bold text-sm text-gray-900">FIXED SCROLLING</h3>
+                  <h3 className="font-bold text-xs text-gray-900">FIXED SCROLLING</h3>
                 </div>
               </div>
             </div>
 
             {/* Be Mindful - Right Side */}
-            <div className="flex flex-col justify-center">
-              <h2 className="text-5xl font-bold text-right">
+            <div className="lg:col-span-2 flex flex-col justify-center items-end">
+              <h2 className="text-4xl lg:text-5xl font-bold">
                 Be
-                <span className="block text-red-600 text-6xl">Mindful!</span>
+                <span className="block text-red-600 text-5xl lg:text-6xl">Mindful!</span>
               </h2>
             </div>
           </div>
