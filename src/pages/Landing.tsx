@@ -31,9 +31,9 @@ const Landing = () => {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
               No Distractions,
               <span className="block text-foreground">STAY FOCUSED.</span>
               <span className="block text-red-600">Straight Forward MEDIA</span>
@@ -41,24 +41,36 @@ const Landing = () => {
             <p className="text-lg text-muted-foreground mb-8">
               Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-8">
               <Link to="/signup">
                 <Button className="bg-black text-white hover:bg-gray-900 px-8 py-6 text-lg">
                   Get Started
                 </Button>
               </Link>
             </div>
-            <div className="flex gap-4 mt-6">
+            <div className="flex gap-4">
               <span className="text-sm text-muted-foreground">get the app on :</span>
               <a href="#" className="text-sm hover:underline">▶ PlayStore</a>
               <a href="#" className="text-sm hover:underline">🍎 AppStore</a>
             </div>
           </div>
-          <div className="hidden md:block">
-            <img 
-              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F32c5f9ac38c5436fab13c805f9a0b668?format=webp&width=800" 
-              alt="App features mockup" 
-              className="w-full"
+          <div className="hidden lg:grid grid-cols-2 gap-4 auto-rows-max">
+            <div className="col-span-2">
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F1e9ffb499d8f4bc1b493208a723d2d5d?format=webp&width=800"
+                alt="App interface showing mindful features"
+                className="w-full h-auto"
+              />
+            </div>
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F941257f2f48f49df86c49277a1e6f86e?format=webp&width=800"
+              alt="No mindless scrolling - stay focused"
+              className="w-full h-auto"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F53284484e7df47038aa979c599496a5e?format=webp&width=800"
+              alt="App features - fixed scrolling, verified news, low dopamine mode, content filters"
+              className="w-full h-auto"
             />
           </div>
         </div>
@@ -110,13 +122,6 @@ const Landing = () => {
                   <span>Low dopamine mode - Reduce stimulation</span>
                 </li>
               </ul>
-            </div>
-            <div>
-              <img 
-                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Ff8c798f7606042bbaa40a2a8f75192a4?format=webp&width=800" 
-                alt="Addictive vs Mindful comparison" 
-                className="w-full"
-              />
             </div>
           </div>
         </div>
