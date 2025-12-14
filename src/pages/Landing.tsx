@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Heart, Brain, Eye, Newspaper, Hourglass } from "lucide-react";
 
 const Landing = () => {
   return (
@@ -75,49 +76,59 @@ const Landing = () => {
       {/* Features Grid */}
       <section className="bg-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">Be <span className="text-red-600">Mindful!</span></h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Our App Helps you stay aware of your precious Time!
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
-            {[
-              { icon: "🧘", title: "DIGITAL WELLNESS", desc: "Stay mindful of your usage" },
-              { icon: "🎯", title: "FOCUS MODE", desc: "Reduce distractions" },
-              { icon: "👁️", title: "CONTENT FILTERING", desc: "Control what you see" },
-              { icon: "📰", title: "VERIFIED NEWS", desc: "Trust your sources" },
-              { icon: "⏳", title: "FIXED SCROLLING", desc: "Finite feed only" },
-            ].map((feature, idx) => (
-              <div key={idx} className="text-center">
-                <div className="text-4xl mb-3">{feature.icon}</div>
-                <h3 className="font-bold text-sm mb-2">{feature.title}</h3>
-                <p className="text-xs text-muted-foreground">{feature.desc}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start mb-16">
+            {/* Features Grid - Left Side */}
+            <div className="lg:col-span-2 bg-white rounded-lg p-8">
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                {[
+                  { Icon: Heart, title: "DIGITAL WELLNESS" },
+                  { Icon: Brain, title: "FOCUS MODE" },
+                  { Icon: Eye, title: "CONTENT FILTERING" },
+                  { Icon: Newspaper, title: "VERIFIED NEWS" },
+                ].map((feature, idx) => (
+                  <div key={idx} className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <feature.Icon className="w-12 h-12 text-gray-800 stroke-1" />
+                    </div>
+                    <h3 className="font-bold text-sm text-gray-900">{feature.title}</h3>
+                  </div>
+                ))}
               </div>
-            ))}
+              <div className="flex justify-center">
+                <div className="text-center">
+                  <Hourglass className="w-12 h-12 text-gray-800 stroke-1 mx-auto mb-4" />
+                  <h3 className="font-bold text-sm text-gray-900">FIXED SCROLLING</h3>
+                </div>
+              </div>
+            </div>
+
+            {/* Be Mindful - Right Side */}
+            <div className="flex flex-col justify-center">
+              <h2 className="text-5xl font-bold text-right">
+                Be
+                <span className="block text-red-600 text-6xl">Mindful!</span>
+              </h2>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          {/* Our App Helps Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                Our App Helps you stay aware of your precious <span className="text-red-600">Time!</span>
+                <span className="text-red-600">Our App</span> Helps you stay aware of your precious
+                <span className="block text-red-600">Time!</span>
               </h3>
               <p className="text-muted-foreground mb-6">
                 Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.
               </p>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-2">
-                  <span className="text-red-600">✓</span>
-                  <span>Fixed scrolling - No endless feed</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-red-600">✓</span>
-                  <span>Verified news - Trust your sources</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-red-600">✓</span>
-                  <span>Low dopamine mode - Reduce stimulation</span>
-                </li>
-              </ul>
+            </div>
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <h4 className="font-bold text-center mb-4 text-gray-900">Addictive vs Mindful</h4>
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Ff8c798f7606042bbaa40a2a8f75192a4?format=webp&width=800"
+                alt="Addictive vs Mindful comparison"
+                className="w-full"
+              />
             </div>
           </div>
         </div>
