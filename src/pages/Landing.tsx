@@ -54,8 +54,8 @@ const Landing = () => {
           </div>
           <div className="hidden lg:flex gap-3 justify-end items-start">
             <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fde04a920f7174ea9a4dde82c90999c23?format=webp&width=800"
-              alt="Person using LockedIn app with mindful features"
+              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F1e9ffb499d8f4bc1b493208a723d2d5d?format=webp&width=800"
+              alt="LockedIn app interface mockup"
               className="h-96 w-auto"
             />
             <img
