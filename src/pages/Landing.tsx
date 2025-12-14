@@ -54,23 +54,11 @@ const Landing = () => {
               <a href="#" className="text-sm hover:underline">🍎 AppStore</a>
             </div>
           </div>
-          <div className="hidden lg:grid grid-cols-2 gap-4 auto-rows-max">
-            <div className="col-span-2">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F1e9ffb499d8f4bc1b493208a723d2d5d?format=webp&width=800"
-                alt="App interface showing mindful features"
-                className="w-full h-auto"
-              />
-            </div>
+          <div className="hidden lg:flex justify-center">
             <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F941257f2f48f49df86c49277a1e6f86e?format=webp&width=800"
-              alt="No mindless scrolling - stay focused"
-              className="w-full h-auto"
-            />
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F53284484e7df47038aa979c599496a5e?format=webp&width=800"
-              alt="App features - fixed scrolling, verified news, low dopamine mode, content filters"
-              className="w-full h-auto"
+              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fde04a920f7174ea9a4dde82c90999c23?format=webp&width=800"
+              alt="Person using LockedIn app with mindful features"
+              className="w-full h-auto max-w-md"
             />
           </div>
         </div>
