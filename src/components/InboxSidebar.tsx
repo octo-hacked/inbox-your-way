@@ -1,8 +1,13 @@
-import { useState } from "react";
 import { Send, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { formatDistanceToNow } from "date-fns";
+import { formatDateTime, formatDateRelative } from "@/lib/utils";
+import { Link } from "react-router-dom";
 import type { FeedPost } from "@/components/MainFeed";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
@@ -15,65 +20,123 @@ type InboxSidebarProps = {
 };
 
 const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShare }: InboxSidebarProps) => {
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [selectedRecipients, setSelectedRecipients] = useState<number[]>([]);
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const { toast } = useToast();
+  const { user, accessToken } = useAuth();
 
-  const conversations = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      avatar: avatarFor("Sarah Chen"),
-      lastMessage: "Thanks for sharing that article!",
-      time: "2m",
-      unread: true,
-      online: true
-    },
-    {
-      id: 2,
-      name: "Alex Morgan",
-      avatar: avatarFor("Alex Morgan"),
-      lastMessage: "Let's catch up soon",
-      time: "1h",
-      unread: false,
-      online: true
-    },
-    {
-      id: 3,
-      name: "Jordan Kim",
-      avatar: avatarFor("Jordan Kim"),
-      lastMessage: "Great presentation today",
-      time: "3h",
-      unread: false,
-      online: false
-    },
-    {
-      id: 4,
-      name: "Emma Wilson",
-      avatar: avatarFor("Emma Wilson"),
-      lastMessage: "See you at the meeting",
-      time: "1d",
-      unread: true,
-      online: false
-    },
-    {
-      id: 5,
-      name: "Marcus Johnson",
-      avatar: avatarFor("Marcus Johnson"),
-      lastMessage: "The project looks amazing",
-      time: "2d",
-      unread: false,
-      online: true
+  const [commentsList, setCommentsList] = useState<any[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
+
+  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, initializeSocket, loading: chatsLoading } = useChat();
+
+  useEffect(() => {
+    if (accessToken && user) {
+      try { initializeSocket?.(accessToken); } catch (e) { /* ignore */ }
+      fetchChats().catch((e) => console.error('fetchChats failed', e));
     }
-  ];
+  }, [accessToken, user, fetchChats, initializeSocket]);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!postPreview) return;
+      setLoadingComments(true);
+      try {
+        const commentsApi = await import("@/lib/comments");
+        const res = await commentsApi.getComments({ postId: postPreview.remoteId ?? postPreview.id, limit: 50, includeReplies: false, token: accessToken });
+        const parseArray = (v: any) => {
+          if (Array.isArray(v)) return v;
+          if (!v) return [];
+          if (Array.isArray(v.comments)) return v.comments;
+          if (Array.isArray(v.items)) return v.items;
+          if (Array.isArray(v.data)) return v.data;
+          if (Array.isArray(v.data?.comments)) return v.data.comments;
+          if (Array.isArray(v.data?.items)) return v.data.items;
+          return [];
+        };
+        const items = parseArray(res);
+        if (!mounted) return;
+        const normalize = (c: any) => ({
+          id: c._id ?? c.id,
+          body: c.body ?? c.text ?? c.content ?? "",
+          user: {
+            username: c.commentBy?.username || c.user?.username || c.user || "unknown",
+            avatar: c.commentBy?.avatar || c.user?.avatar || avatarFor(c.commentBy?.username || c.user?.username || "user"),
+            fullname: c.commentBy?.fullname || c.user?.fullname || undefined,
+            email: c.commentBy?.email || c.user?.email || undefined,
+          },
+          parentId: c.parentComment ?? c.parent ?? null,
+          likes: c.likesCount ?? c.likes ?? 0,
+          liked: Boolean(c.isLikedByUser ?? c.isLiked ?? false),
+          replyCount: c.replyCount ?? c.repliesCount ?? 0,
+          timeAgo: c.timeAgo ?? (c.createdAt ? formatDateRelative(c.createdAt) : ""),
+          raw: c,
+        });
+        setCommentsList(items.map(normalize));
+      } catch (err) {
+        console.error("Failed to load comments:", err);
+        toast({ title: "Comments", description: "Could not load comments.", variant: "destructive" });
+      } finally {
+        if (mounted) setLoadingComments(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [postPreview, accessToken, toast]);
+
+  const handleAddComment = async () => {
+    if (postingComment) return;
+    if (!newMessage.trim() || !postPreview) return;
+    const body = newMessage.trim();
+    setPostingComment(true);
+    try {
+      const commentsApi = await import("@/lib/comments");
+      const res = await commentsApi.postComment(postPreview.remoteId ?? postPreview.id, body, undefined, accessToken);
+      // Normalize created item
+      const createdRaw = res?.comment || res?.data || res;
+      const created = createdRaw?.comment || createdRaw?.data || createdRaw;
+      if (!created) {
+        console.warn('Unexpected comment create response:', res);
+        throw new Error('Invalid response from server');
+      }
+      const normalize = (c: any) => ({
+        id: c._id ?? c.id,
+        body: c.body ?? c.text ?? c.content ?? "",
+        user: {
+          username: c.commentBy?.username || c.user?.username || c.user || "unknown",
+          avatar: c.commentBy?.avatar || c.user?.avatar || avatarFor(c.commentBy?.username || c.user?.username || "user"),
+        },
+        parentId: c.parentComment ?? c.parent ?? null,
+        likes: c.likesCount ?? c.likes ?? 0,
+        liked: Boolean(c.isLikedByUser ?? c.isLiked ?? false),
+        replyCount: c.replyCount ?? c.repliesCount ?? 0,
+        timeAgo: c.timeAgo ?? (c.createdAt ? formatDateRelative(c.createdAt) : ""),
+        raw: c,
+      });
+      setCommentsList((prev) => [normalize(created), ...prev]);
+      setNewMessage("");
+    } catch (err) {
+      console.error("Failed to post comment:", err);
+      toast({ title: "Comment Failed", description: "Could not post comment.", variant: "destructive" });
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
+  const conversations = chats.map((c, i) => ({
+    id: c._id ?? `chat-${i}`,
+    name: c.isGroupChat ? c.name : (c.participants.find(p => p._id !== (c.admin || ''))?.username || 'Unknown'),
+    avatar: c.participants[0]?.avatar || avatarFor(c.name || 'chat'),
+    lastMessage: c.lastMessage?.content || '',
+    time: c.updatedAt ? formatDateRelative(c.updatedAt) : '',
+    unread: false,
+    online: c.participants.some(p => onlineUsers.has(p._id)),
+  }));
 
   if (postPreview) {
-    const comments = [
-      { id: 1, user: "alex_m", avatar: avatarFor("alex_m"), text: "Love this!", time: "2m" },
-      { id: 2, user: "jordan.k", avatar: avatarFor("jordan.k"), text: "Totally agree.", time: "10m" },
-      { id: 3, user: "emma_w", avatar: avatarFor("emma_w"), text: "So well said.", time: "1h" }
-    ];
 
     return (
       <div className="w-80 h-screen bg-card border-l border-border flex flex-col">
@@ -89,9 +152,23 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         <ScrollArea className="flex-1 inbox-scroll">
           <div className="p-4 space-y-4">
             <div className="flex items-center gap-3">
-              <img src={postPreview.avatar} alt={`${postPreview.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+              {postPreview.uploaderId ? (
+                <Link to={`/profile/${encodeURIComponent(String(postPreview.uploaderId))}`} className="flex items-center">
+                  <img src={postPreview.avatar} alt={`${postPreview.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+                </Link>
+              ) : (
+                <Link to="/profile" className="flex items-center">
+                  <img src={postPreview.avatar} alt={`${postPreview.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+                </Link>
+              )}
               <div>
-                <div className="text-sm font-medium text-foreground">{postPreview.username}</div>
+                <div className="text-sm font-medium text-foreground">
+                  {postPreview.uploaderId ? (
+                    <Link to={`/profile/${encodeURIComponent(String(postPreview.uploaderId))}`}>{postPreview.username}</Link>
+                  ) : (
+                    <Link to="/profile">{postPreview.username}</Link>
+                  )}
+                </div>
                 <div className="text-xs text-muted-foreground">{postPreview.time}</div>
               </div>
             </div>
@@ -101,51 +178,96 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
             <p className="text-xs text-muted-foreground leading-relaxed">{postPreview.content}</p>
             <div className="h-px w-full bg-border" />
             <div className="space-y-3">
-              {comments.map((c) => (
-                <div key={c.id} className="flex items-start gap-3">
-                  <img src={c.avatar} alt={c.user} className="w-7 h-7 rounded-full object-cover" />
-                  <div>
-                    <div className="text-sm text-foreground"><span className="font-medium">{c.user}</span> {c.text}</div>
-                    <div className="text-[10px] text-muted-foreground">{c.time}</div>
+              {loadingComments ? (
+                <div className="text-sm text-muted-foreground">Loading comments...</div>
+              ) : commentsList.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No comments yet</div>
+              ) : (
+                commentsList.map((c: any, idx: number) => (
+                  <div key={c.id ?? `comment-${idx}`} className="flex items-start gap-3">
+                    {c.raw?.commentBy?._id ? (
+                      <Link to={`/profile/${encodeURIComponent(String(c.raw.commentBy._id))}`}>
+                        <img src={c.user?.avatar || avatarFor(c.user?.username || c.user || 'user')} alt={c.user?.username || c.user} className="w-7 h-7 rounded-full object-cover" />
+                      </Link>
+                    ) : (
+                      <img src={c.user?.avatar || avatarFor(c.user?.username || c.user || 'user')} alt={c.user?.username || c.user} className="w-7 h-7 rounded-full object-cover" />
+                    )}
+                    <div>
+                      <div className="text-sm text-foreground"><span className="font-medium">{c.user?.username ? (c.raw?.commentBy?._id ? <Link to={`/profile/${encodeURIComponent(String(c.raw.commentBy._id))}`}>{c.user.username}</Link> : c.user.username) : (c.user || '')}</span> {c.body || c.text || c.content}</div>
+                      <div className="text-[10px] text-muted-foreground">{c.timeAgo || c.createdAt}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </ScrollArea>
+
+        {/* Composer */}
+        <div className="p-3 border-t border-border">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+              className="flex-1 bg-input rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+            <button
+              onClick={() => handleAddComment()}
+              className="p-2 bg-primary text-primary-foreground rounded-lg active:scale-[0.98]"
+              aria-label="Send comment"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   // Default inbox UI
 
-  const messages: Record<number, { id: number; text: string; sender: "me" | "other"; time: string }[]> = {
-    1: [
-      { id: 1, text: "Hey! How are you doing?", sender: "other", time: "10:30 AM" },
-      { id: 2, text: "I'm doing great!", sender: "me", time: "10:32 AM" },
-      { id: 3, text: "Thanks for sharing that article!", sender: "other", time: "10:33 AM" }
-    ],
-    2: [
-      { id: 1, text: "Hey Alex!", sender: "me", time: "Yesterday" },
-      { id: 2, text: "Let's catch up soon", sender: "other", time: "1h ago" }
-    ],
-    3: [
-      { id: 1, text: "Great presentation today", sender: "other", time: "3h ago" },
-      { id: 2, text: "Thank you! I'm glad it went well.", sender: "me", time: "3h ago" }
-    ]
+  // use real chat messages from ChatContext
+  const currentChat = chats.find(c => c._id === selectedChat);
+  const currentMessages = selectedChat ? (messages[selectedChat] || []) : [];
+
+  const getChatDisplayName = (chat: any) => {
+    if (!chat) return "";
+    if (chat.isGroupChat) return chat.name;
+    const other = chat.participants?.find((p: any) => p._id !== (chat.admin || ''));
+    return other?.username || other?.fullname || 'Unknown User';
   };
 
-  const currentChat = conversations.find(c => c.id === selectedChat);
-  const currentMessages = selectedChat ? messages[selectedChat] || [] : [];
+  const getChatAvatar = (chat: any) => {
+    if (!chat) return avatarFor('user');
+    if (chat.isGroupChat) return avatarFor(chat.name || 'group');
+    const other = chat.participants?.find((p: any) => p._id !== (chat.admin || ''));
+    return other?.avatar || avatarFor(other?.username || other?._id || 'user');
+  };
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
+  const getChatLastSeen = (chat: any) => {
+    if (!chat) return '';
+    const time = chat.lastMessage?.createdAt || chat.updatedAt;
+    if (!time) return '';
+    try { return formatDistanceToNow(new Date(time), { addSuffix: true }); } catch { return ''; }
+  };
+
+  const handleSendMessage = async () => {
+    if (!selectedChat || !newMessage.trim()) return;
+    try {
+      await sendMessage(selectedChat, newMessage.trim());
       setNewMessage("");
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      toast({ title: 'Send failed', description: 'Could not send message', variant: 'destructive' });
     }
   };
 
+
   if (postToShare) {
-    const toggleRecipient = (id: number) => {
+    const toggleRecipient = (id: string) => {
       setSelectedRecipients((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
     };
 
@@ -169,9 +291,21 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         <ScrollArea className="flex-1 inbox-scroll">
           <div className="p-4 space-y-4">
             <div className="flex items-center gap-3">
-              <img src={postToShare.avatar} alt={`${postToShare.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+              {postToShare.uploaderId ? (
+                <Link to={`/profile/${encodeURIComponent(String(postToShare.uploaderId))}`} className="flex items-center">
+                  <img src={postToShare.avatar} alt={`${postToShare.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+                </Link>
+              ) : (
+                <Link to="/profile" className="flex items-center">
+                  <img src={postToShare.avatar} alt={`${postToShare.username} avatar`} className="w-8 h-8 rounded-full object-cover" />
+                </Link>
+              )}
               <div>
-                <div className="text-sm font-medium text-foreground">{postToShare.username}</div>
+                <div className="text-sm font-medium text-foreground">{postToShare.uploaderId ? (
+                  <Link to={`/profile/${encodeURIComponent(String(postToShare.uploaderId))}`}>{postToShare.username}</Link>
+                ) : (
+                  <Link to="/profile">{postToShare.username}</Link>
+                )}</div>
                 <div className="text-xs text-muted-foreground">{postToShare.time}</div>
               </div>
             </div>
@@ -183,8 +317,8 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
             <div className="space-y-3">
               <div className="text-xs font-medium text-foreground">Select recipients</div>
-              {conversations.map((c) => (
-                <label key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-hover-bg cursor-pointer">
+              {conversations.map((c, idx) => (
+                <label key={c.id ?? `conv-${idx}`} className="flex items-center gap-3 p-2 rounded hover:bg-hover-bg cursor-pointer">
                   <div className="relative">
                     <img src={c.avatar} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
                     {c.online && (
@@ -233,16 +367,14 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
             </button>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <img src={currentChat?.avatar} alt={currentChat?.name} className="w-8 h-8 rounded-full object-cover" />
-                {currentChat?.online && (
+                <img src={getChatAvatar(currentChat)} alt={getChatDisplayName(currentChat)} className="w-8 h-8 rounded-full object-cover" />
+                {currentChat && currentChat.participants && currentChat.participants.some((p: any) => onlineUsers.has(p._id)) && (
                   <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-white rounded-full"></div>
                 )}
               </div>
               <div>
-                <h3 className="text-sm font-medium text-foreground">{currentChat?.name}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {currentChat?.online ? "Active now" : "Last seen 2h ago"}
-                </p>
+                <h3 className="text-sm font-medium text-foreground">{getChatDisplayName(currentChat)}</h3>
+                <p className="text-xs text-muted-foreground">{getChatLastSeen(currentChat) || ''}</p>
               </div>
             </div>
             <div className="ml-auto flex items-center gap-1">
@@ -259,27 +391,41 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
         {/* Messages */}
         <ScrollArea className="flex-1 inbox-scroll">
           <div className="p-3 space-y-3">
-            {currentMessages.map((message) => (
-              <div 
-                key={message.id}
-                className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-[200px] rounded-lg p-2 ${
-                  message.sender === 'me' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted text-foreground'
-                }`}>
-                  <p className="text-xs">{message.text}</p>
-                  <p className={`text-[10px] mt-1 ${
-                    message.sender === 'me' 
-                      ? 'text-primary-foreground/70' 
-                      : 'text-muted-foreground'
-                  }`}>
-                    {message.time}
-                  </p>
-                </div>
+            {currentMessages.length === 0 ? (
+              <div className="flex items-center justify-center h-32 text-muted-foreground">
+                <p>No messages yet. Start the conversation!</p>
               </div>
-            ))}
+            ) : (
+              currentMessages.map((message: any, idx: number) => {
+                const isOwn = message.sender?._id === undefined ? (message.sender === 'me') : (message.sender._id === user?.id);
+                return (
+                  <div
+                    key={message._id ?? message.id ?? `msg-${idx}`}
+                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[80%] md:max-w-xs rounded-lg p-3 ${
+                      isOwn
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-foreground'
+                    }`}>
+                      {!isOwn && currentChat?.isGroupChat && (
+                        <p className="text-xs font-medium mb-1 opacity-75">
+                          {message.sender?._id ? (
+                            <Link to={`/profile/${encodeURIComponent(String(message.sender._id))}`}>{message.sender.username}</Link>
+                          ) : (
+                            message.sender?.username
+                          )}
+                        </p>
+                      )}
+                      <p className="text-sm">{message.content ?? message.text ?? ''}</p>
+                      <p className={`text-xs mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                        {message.createdAt ? formatDistanceToNow(new Date(message.createdAt), { addSuffix: true }) : (message.time || '')}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </ScrollArea>
 
@@ -326,10 +472,17 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
       {/* Conversations List */}
       <ScrollArea className="flex-1 inbox-scroll">
-        {conversations.map((conversation) => (
-          <div 
-            key={conversation.id}
-            onClick={() => setSelectedChat(conversation.id)}
+        {conversations.map((conversation, idx) => (
+          <div
+            key={conversation.id ?? `conv-${idx}`}
+            onClick={() => {
+              setSelectedChat(conversation.id);
+              const chatObj = chats.find(ch => ch._id === conversation.id);
+              if (chatObj) {
+                setActiveChat(chatObj);
+                fetchMessages(conversation.id as string).catch((e) => console.error('fetchMessages failed', e));
+              }
+            }}
             className="p-4 border-b border-border hover:bg-hover-bg cursor-pointer transition-colors"
           >
             <div className="flex items-start gap-3">

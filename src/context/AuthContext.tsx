@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import { API_BASE } from "@/lib/config";
 
 // 1. Updated User type to match your API response
 type User = {
@@ -64,29 +65,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       setLoading(true);
-      await axios.post(
-        "http://localhost:3000/api/v1//users/logout",
-        {},
-        {
-          withCredentials: true,
-          headers: state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : undefined,
+      // Only call server logout if we have a token/cookie that may need clearing
+      if (state.accessToken || state.refreshToken) {
+        try {
+          await axios.post(
+            `${API_BASE}/users/logout`,
+            {},
+            {
+              withCredentials: true,
+              headers: state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : undefined,
+            }
+          );
+        } catch (err) {
+          // ignore server-side logout errors (e.g., 401) to avoid noisy errors
+          console.warn("Logout request failed (ignored):", err);
         }
-      );
-    } catch (error) {
-      // Intentionally ignore API errors during logout; proceed with local sign-out
-      console.error("Logout request failed:", error);
+      }
     } finally {
       persist({ user: null, accessToken: null, refreshToken: null });
       toast({ title: "Logged out", description: "You have been signed out." });
       setLoading(false);
     }
-  }, [persist, state.accessToken, toast]);
+  }, [persist, state.accessToken, state.refreshToken, toast]);
 
   const signIn = useCallback(
     async ({ email, password }: { email: string; password: string }) => {
       setLoading(true);
       try {
-        const res = await axios.post("http://localhost:3000/api/v1/users/login", { email, password }, { withCredentials: true } );
+        const res = await axios.post(`${API_BASE}/users/login`, { email, password }, { withCredentials: true } );
 
         if (res.data.success) {
           // 2. Destructure the response according to your API structure
@@ -133,10 +139,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         form.append("password", password);
         form.append("avatar", avatar);
 
-        const res = await axios.post("http://localhost:3000/api/v1/users/register", form, {
+        const res = await axios.post(`${API_BASE}/users/register`, form, {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
-        }, );
+        });
 
         if (res.data.success) {
           toast({ title: "Registration Successful", description: "Please log in to continue." });
@@ -155,6 +161,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [signIn, toast]
   );
+
+  // On initial load, if we have a refresh token but no access token, try to refresh it
+  const initialRefreshTriedRef = useRef(false);
+  useEffect(() => {
+    if (initialRefreshTriedRef.current) return;
+    initialRefreshTriedRef.current = true;
+
+    const local = loadFromStorage();
+    if (local.accessToken) return; // already have access token
+    if (!local.refreshToken) return; // nothing to refresh
+
+    (async () => {
+      try {
+        const auth = await import("@/lib/auth");
+        const newAccess = await auth.refreshAccessToken();
+        if (newAccess) {
+          const next = loadFromStorage();
+          persist(next);
+          toast({ title: "Session Restored", description: "Your session was refreshed." });
+        }
+      } catch (error: any) {
+        console.error("Refresh on load failed:", error);
+        await signOut();
+        toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+      }
+    })();
+    // Intentionally run only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for global sessionExpired events (dispatched when refresh fails during requests)
+  useEffect(() => {
+    const handler = () => {
+      if (!state.accessToken && !state.refreshToken) return;
+      (async () => {
+        await signOut();
+        toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+      })();
+    };
+
+    window.addEventListener("sessionExpired", handler);
+    return () => window.removeEventListener("sessionExpired", handler);
+  }, [state.accessToken, state.refreshToken, signOut, toast]);
 
   const value: AuthContextType = useMemo(
     () => ({

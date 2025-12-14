@@ -201,18 +201,24 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   }
 };
 
-export const ChatProvider: React.FC<{ 
-  children: ReactNode; 
-  apiBaseUrl?: string; 
-  
-}> = ({ children, apiBaseUrl = 'http://localhost:3000/api/v1' }) => {
+import { API_BASE, SOCKET_BASE } from "@/lib/config";
+
+export const ChatProvider: React.FC<{
+  children: ReactNode;
+  apiBaseUrl?: string;
+
+}> = ({ children, apiBaseUrl = API_BASE }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const { user,accessToken } = useAuth(); // Use your existing auth context
   
 
   // Initialize socket connection
   const initializeSocket = useCallback((token: string) => {
-    const socket = io('http://localhost:3000', {
+    const socketBaseFromConfig = (typeof window !== 'undefined' ? (window as any).__VITE_SOCKET_BASE__ : undefined) as string | undefined;
+    // Prefer explicit env config export
+    const socketBase = socketBaseFromConfig || (import.meta.env.VITE_SOCKET_BASE as string) || SOCKET_BASE || (typeof window !== 'undefined' ? (apiBaseUrl && apiBaseUrl.startsWith('http') ? apiBaseUrl.replace(/\/api\/v\d+$/i, '') : window.location.origin) : '');
+
+    const socket = io(socketBase, {
       auth: { token },
       withCredentials: true,
     });
@@ -272,25 +278,31 @@ export const ChatProvider: React.FC<{
     });
 
     return socket;
-  }, []);
+  }, [apiBaseUrl]);
 
   // API calls
   const fetchChats = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const response = await fetch(`${apiBaseUrl}/chats`, {
-        headers: { 
-          'Authorization': `Bearer ${accessToken}` 
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch chats');
       }
-      
+
       const data = await response.json();
-      
-      if (data.success) {
+
+      if (data && data.success) {
         dispatch({ type: 'SET_CHATS', payload: data.data });
       }
     } catch (error) {
@@ -298,29 +310,35 @@ export const ChatProvider: React.FC<{
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, accessToken]);
 
   const fetchMessages = useCallback(async (chatId: string) => {
     try {
       const response = await fetch(`${apiBaseUrl}/chats/${chatId}/messages`, {
-        headers: { 
-          'Authorization': `Bearer ${accessToken}` 
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch messages');
       }
-      
+
       const data = await response.json();
-      
-      if (data.success) {
+
+      if (data && data.success) {
         dispatch({ type: 'SET_MESSAGES', payload: { chatId, messages: data.data } });
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     }
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, accessToken]);
 
   const sendMessage = useCallback(async (chatId: string, content: string): Promise<Message | undefined> => {
     try {
@@ -328,53 +346,66 @@ export const ChatProvider: React.FC<{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
         body: JSON.stringify({ content }),
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to send message');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         dispatch({ type: 'ADD_MESSAGE', payload: { chatId, message: data.data } });
-        
+
         // Update chat's lastMessage and move to top
-        const updatedChats = state.chats.map(chat => 
-          chat._id === chatId 
+        const updatedChats = state.chats.map(chat =>
+          chat._id === chatId
             ? { ...chat, lastMessage: data.data, updatedAt: data.data.createdAt }
             : chat
         );
-        
+
         // Sort chats by updatedAt
         updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         dispatch({ type: 'SET_CHATS', payload: updatedChats });
-        
+
         return data.data;
       }
     } catch (error) {
       console.error('Failed to send message:', error);
       throw error;
     }
-  }, [apiBaseUrl, state.chats]);
+  }, [apiBaseUrl, state.chats, accessToken]);
 
   const createDirectChat = useCallback(async (userId: string): Promise<Chat | undefined> => {
     try {
       const response = await fetch(`${apiBaseUrl}/chats/direct/${userId}`, {
         method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${accessToken}` 
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+          'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to create direct chat');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         const existingChat = state.chats.find(chat => chat._id === data.data._id);
         if (!existingChat) {
           dispatch({ type: 'ADD_CHAT', payload: data.data });
@@ -385,7 +416,7 @@ export const ChatProvider: React.FC<{
       console.error('Failed to create direct chat:', error);
       throw error;
     }
-  }, [apiBaseUrl, state.chats]);
+  }, [apiBaseUrl, state.chats, accessToken]);
 
   const createGroupChat = useCallback(async (name: string, participants: string[]): Promise<Chat | undefined> => {
     try {
@@ -393,17 +424,23 @@ export const ChatProvider: React.FC<{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
         body: JSON.stringify({ name, participants }),
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to create group chat');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         dispatch({ type: 'ADD_CHAT', payload: data.data });
         return data.data;
       }
@@ -411,30 +448,36 @@ export const ChatProvider: React.FC<{
       console.error('Failed to create group chat:', error);
       throw error;
     }
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, accessToken]);
 
   const deleteMessage = useCallback(async (chatId: string, messageId: string) => {
     try {
       const response = await fetch(`${apiBaseUrl}/chats/${chatId}/messages/${messageId}`, {
         method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${accessToken}` 
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : '',
         },
+        credentials: 'include',
       });
-      
+
+      if (response.status === 401) {
+        try { window.dispatchEvent(new CustomEvent('sessionExpired')); } catch {}
+        throw new Error('Unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to delete message');
       }
-      
+
       const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         dispatch({ type: 'REMOVE_MESSAGE', payload: { chatId, messageId } });
       }
     } catch (error) {
       console.error('Failed to delete message:', error);
       throw error;
     }
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, accessToken]);
 
   const setActiveChat = useCallback((chat: Chat | null) => {
     dispatch({ type: 'SET_ACTIVE_CHAT', payload: chat });

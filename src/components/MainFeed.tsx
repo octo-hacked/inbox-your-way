@@ -1,11 +1,16 @@
 import { Heart, MessageCircle, Share2, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
+import { formatDateTime, formatDateRelative } from "@/lib/utils";
 
 export type Category = "memes" | "news" | "other";
 
 export type FeedPost = {
   id: number;
+  remoteId?: string; // backend _id string when available (post id)
+  uploaderId?: string; // uploadedBy._id when available (user id)
   username: string;
   content: string;
   likes: number;
@@ -40,11 +45,15 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
     { id: 7, username: "david.r", active: true }
   ];
 
-  const [posts, setPosts] = useState<FeedPost[]>([
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { accessToken } = useAuth();
+
+  const defaultPosts: FeedPost[] = [
     {
       id: 1,
       username: "sarah_chen",
-      content: "Just finished reading about mindful technology and how it can help us stay present in our digital lives. The concept of finite feeds is fascinating!",
+      content: "Just finished reading about mindful technology and how it can help us stay present in our digital lives.",
       likes: 23,
       comments: 5,
       time: "2h",
@@ -52,12 +61,13 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
       avatar: avatarFor("sarah_chen"),
       category: "news",
       lowDopamine: true,
-      isVerified: true
+      isVerified: true,
+      liked: false,
     },
     {
       id: 2,
       username: "alex_m",
-      content: "Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.",
+      content: "Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design.",
       likes: 45,
       comments: 12,
       time: "4h",
@@ -65,70 +75,79 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
       avatar: avatarFor("alex_m"),
       category: "other",
       lowDopamine: false,
-      isVerified: false
+      isVerified: false,
+      liked: false,
     },
-    {
-      id: 3,
-      username: "jordan.k",
-      content: "Loving the minimalist approach to social media. Sometimes less really is more when it comes to staying focused and productive.",
-      likes: 18,
-      comments: 3,
-      time: "6h",
-      image: postImageFor("jordan-3"),
-      avatar: avatarFor("jordan.k"),
-      category: "memes",
-      lowDopamine: false,
-      isVerified: false
-    },
-    {
-      id: 4,
-      username: "emma_w",
-      content: "The power of intentional design in creating healthy digital habits. Every feature should serve a purpose and respect the user's time.",
-      likes: 31,
-      comments: 8,
-      time: "8h",
-      image: postImageFor("emma-4"),
-      avatar: avatarFor("emma_w"),
-      category: "news",
-      lowDopamine: true,
-      isVerified: true
-    },
-    {
-      id: 5,
-      username: "marcus.j",
-      content: "Building technology that enhances rather than detracts from our real-world connections. That's the future I want to be part of.",
-      likes: 67,
-      comments: 15,
-      time: "12h",
-      image: postImageFor("marcus-5"),
-      avatar: avatarFor("marcus.j"),
-      category: "other",
-      lowDopamine: true,
-      isVerified: false
-    },
-    {
-      id: 6,
-      username: "lisa_z",
-      content: "Simple reminder: your attention is your most valuable asset. Choose where to invest it wisely.",
-      likes: 89,
-      comments: 22,
-      time: "1d",
-      image: postImageFor("lisa-6"),
-      avatar: avatarFor("lisa_z"),
-      category: "memes",
-      lowDopamine: false,
-      isVerified: false
+  ];
+
+  const loadFeed = useCallback(async () => {
+    setLoading(true);
+    try {
+      const categoryParam = (selectedCategories && selectedCategories.length === 1) ? selectedCategories[0] : undefined;
+      const res = await import("@/lib/posts");
+      const data = await res.fetchFeed({ page: 1, limit: 20, category: categoryParam, lowDopamineOnly: Boolean(lowDopamineOnly), sortBy: "createdAt", token: accessToken });
+      const items: any[] = data?.posts || data?.items || [];
+      const mapped = items.map((p: any) => {
+        const username = p.uploadedBy?.username || p.author?.username || p.username || "unknown";
+        const rawCategory = String(p.category || "other");
+        const category = (["memes", "news", "other"].includes(rawCategory) ? rawCategory : "other") as Category;
+        const mediaUrl = typeof p.media === "string" ? p.media : Array.isArray(p.media) ? p.media[0]?.url : undefined;
+
+        return {
+          id: typeof p.id === 'number' ? p.id : (Math.floor(Math.random()*1000000)),
+          remoteId: p._id ?? (typeof p.id === 'string' ? p.id : undefined),
+          uploaderId: p.uploadedBy?._id ?? p.author?._id ?? p.uploadedBy?._id,
+          username,
+          content: p.description || p.title || p.content || "",
+          likes: p.likes ?? 0,
+          comments: p.comments ?? p.commentsCount ?? 0,
+          time: p.timeAgo ?? (p.createdAt ? formatDateRelative(p.createdAt) : ""),
+          image: mediaUrl || p.image || postImageFor(p._id || p.id || Math.random()),
+          avatar: p.uploadedBy?.avatar || avatarFor(username || "user"),
+          category,
+          lowDopamine: Boolean(p.isLowDopamine),
+          isVerified: Boolean(p.uploadedBy?.isVerified || p.author?.isVerified),
+          liked: Boolean(p.isLikedByUser ?? p.isLiked ?? p.liked),
+        } as FeedPost;
+      });
+
+      if (mapped.length === 0) {
+        // if API returned no posts, fall back to default sample posts
+        setPosts(defaultPosts);
+      } else {
+        setPosts(mapped);
+      }
+    } catch (err) {
+      console.error("Failed to load feed:", err);
+      // On network/API failure, show default sample posts so UI stays useful during development
+      setPosts(defaultPosts);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, [accessToken, selectedCategories, lowDopamineOnly]);
 
-  const toggleLike = (id: number) => {
+  useEffect(() => {
+    loadFeed();
+  }, [loadFeed]);
+
+  const toggleLike = async (id: number) => {
+    // Optimistic UI update
     setPosts((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p,
-      ),
+      prev.map((p) => (p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p)),
     );
+    try {
+      const post = posts.find((p) => p.id === id);
+      const targetId = post?.remoteId ?? post?.id ?? id;
+      const res = await import("@/lib/posts");
+      await res.toggleLike(targetId, accessToken ?? undefined);
+    } catch (e) {
+      console.error("Like toggle failed:", e);
+      // On error, revert optimistic update
+      setPosts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p)),
+      );
+    }
   };
-
 
   const activeCategories: Category[] = selectedCategories && selectedCategories.length > 0 ? selectedCategories : ["memes", "news", "other"];
   const onlyLow = Boolean(lowDopamineOnly);
@@ -167,10 +186,25 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
               {/* Post Header */}
               <div className="p-3 md:p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0 flex-grow">
-                  <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" /> {/* Added flex-shrink-0 */}
+                  {post.uploaderId ? (
+                    <Link to={`/profile/${encodeURIComponent(String(post.uploaderId))}`} className="flex items-center gap-3 min-w-0">
+                      <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    </Link>
+                  ) : (
+                    <Link to="/profile" className="flex items-center gap-3 min-w-0">
+                      <img src={post.avatar} alt={`${post.username} avatar`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    </Link>
+                  )}
+
                   <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-1">
-                      <span className="text-sm font-medium text-foreground truncate">{post.username}</span>
+                      {post.uploaderId ? (
+                        <Link to={`/profile/${encodeURIComponent(String(post.uploaderId))}`} className="text-sm font-medium text-foreground truncate">
+                          {post.username}
+                        </Link>
+                      ) : (
+                        <Link to="/profile" className="text-sm font-medium text-foreground truncate">{post.username}</Link>
+                      )}
                       {post.isVerified && <BadgeCheck className="w-4 h-4 text-accent flex-shrink-0" />}
                     </div>
                     <div className="text-xs text-muted-foreground">{post.time}</div>

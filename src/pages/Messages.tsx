@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { Category } from "@/components/MainFeed";
 import { useChat } from "../context/ChatContext"; // You'll need to create this
 import { useAuth } from "@/context/AuthContext";
+import { API_BASE } from "@/lib/config";
 import { formatDistanceToNow } from "date-fns";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
@@ -46,7 +47,6 @@ const Messages = () => {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const API_BASE = "http://localhost:3000/api/v1";
 
   // Get chat context
   const {
