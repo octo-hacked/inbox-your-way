@@ -114,20 +114,20 @@ const Landing = () => {
           {/* Our App Helps Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              <h3 className="text-3xl md:text-4xl font-bold mb-4">
                 <span className="text-red-600">Our App</span> Helps you stay aware of your precious
                 <span className="block text-red-600">Time!</span>
               </h3>
-              <p className="text-muted-foreground mb-6">
+              <p className="text-muted-foreground text-base leading-relaxed">
                 Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h4 className="font-bold text-center mb-4 text-gray-900">Addictive vs Mindful</h4>
+            <div className="bg-white rounded-lg p-8 shadow-sm">
+              <h4 className="font-bold text-center mb-6 text-gray-900 text-lg">Addictive vs Mindful</h4>
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Ff8c798f7606042bbaa40a2a8f75192a4?format=webp&width=800"
                 alt="Addictive vs Mindful comparison"
-                className="w-full"
+                className="w-full h-auto"
               />
             </div>
           </div>
