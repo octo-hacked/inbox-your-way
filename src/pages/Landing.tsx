@@ -34,8 +34,8 @@ const Landing = () => {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <div>
+        <div className="flex flex-col lg:flex-row gap-16 items-start justify-between">
+          <div className="flex-shrink-0 max-w-sm">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
               No Distractions,
               <span className="block text-foreground">STAY FOCUSED,</span>
@@ -52,21 +52,21 @@ const Landing = () => {
               <a href="#" className="text-xs hover:underline">🍎 AppStore</a>
             </div>
           </div>
-          <div className="hidden lg:flex gap-3 justify-end items-start">
+          <div className="hidden lg:flex gap-2 flex-shrink-0">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F1e9ffb499d8f4bc1b493208a723d2d5d?format=webp&width=800"
               alt="LockedIn app interface mockup"
-              className="h-96 w-auto"
+              className="h-80 w-auto"
             />
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F941257f2f48f49df86c49277a1e6f86e?format=webp&width=800"
               alt="No mindless scrolling - stay focused"
-              className="h-96 w-auto"
+              className="h-80 w-auto"
             />
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F53284484e7df47038aa979c599496a5e?format=webp&width=800"
               alt="App features - fixed scrolling, verified news, low dopamine mode"
-              className="h-96 w-auto"
+              className="h-80 w-auto"
             />
           </div>
         </div>
