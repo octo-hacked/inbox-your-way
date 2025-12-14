@@ -35,16 +35,6 @@ type MainFeedProps = {
 };
 
 const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamineOnly }: MainFeedProps) => {
-  const stories = [
-    { id: 1, username: "sarah_chen", active: true },
-    { id: 2, username: "alex_m", active: false },
-    { id: 3, username: "jordan.k", active: true },
-    { id: 4, username: "emma_w", active: false },
-    { id: 5, username: "marcus.j", active: true },
-    { id: 6, username: "lisa_z", active: false },
-    { id: 7, username: "david.r", active: true }
-  ];
-
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(false);
   const { accessToken } = useAuth();
@@ -156,28 +146,6 @@ const MainFeed = ({ onOpenComments, onOpenShare, selectedCategories, lowDopamine
   return (
     <ScrollArea className="flex-1 h-screen  overflow-x-hidden main-feed-scroll">
       <div className="px-0 md:px-6 py-4 md:py-6">
-        {/* Stories Section */}
-        <div className=" w-screen md:w-full">
-          <div className="flex gap-4 items-center overflow-x-auto no-scrollbar p-2"> {/* Adjusted px for mobile stories */}
-            {stories.map((story) => (
-              <div key={story.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"> {/* Added flex-shrink-0 */}
-                <div className={`w-16 h-16 rounded-full bg-muted mb-2 relative ${story.active ? 'ring-2 ring-accent ring-offset-2' : ''}`}>
-                  <img
-                    src={avatarFor(story.username)}
-                    alt={`${story.username} story`}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  {story.active && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full"></div>
-                  )}
-                </div>
-                <span className="text-sm text-muted-foreground">{story.username}</span>
-              </div>
-            ))}
-          </div>
-          <div className="w-full h-px bg-border mt-6"></div>
-        </div>
-
         {/* Posts Grid */}
         {/* Added px-4 for mobile padding to the grid container itself */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6 pb-24 md:pb-6  md:px-0"> {/* Removed lg:grid-cols-3 and added px-4 */}
