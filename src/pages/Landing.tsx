@@ -15,6 +15,9 @@ const Landing = () => {
             />
           </div>
           <div className="flex items-center gap-4">
+            <a href="#about" className="text-white hover:text-gray-300 text-sm">
+              About Us
+            </a>
             <Link to="/signin">
               <Button variant="ghost" className="text-white hover:text-gray-300">
                 Log in
@@ -31,34 +34,39 @@ const Landing = () => {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
               No Distractions,
-              <span className="block text-foreground">STAY FOCUSED.</span>
+              <span className="block text-foreground">STAY FOCUSED,</span>
               <span className="block text-red-600">Straight Forward MEDIA</span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-8">
-              Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design.
-            </p>
-            <div className="flex gap-4 mb-8">
+            <div className="flex gap-4 mb-8 items-center">
               <Link to="/signup">
-                <Button className="bg-black text-white hover:bg-gray-900 px-8 py-6 text-lg">
+                <Button className="bg-black text-white hover:bg-gray-900 px-6 py-2 text-sm">
                   Get Started
                 </Button>
               </Link>
-            </div>
-            <div className="flex gap-4">
               <span className="text-sm text-muted-foreground">get the app on :</span>
-              <a href="#" className="text-sm hover:underline">▶ PlayStore</a>
-              <a href="#" className="text-sm hover:underline">🍎 AppStore</a>
+              <a href="#" className="text-xs hover:underline">▶ PlayStore</a>
+              <a href="#" className="text-xs hover:underline">🍎 AppStore</a>
             </div>
           </div>
-          <div className="hidden lg:flex justify-center">
+          <div className="hidden lg:flex gap-3 justify-end items-start">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fde04a920f7174ea9a4dde82c90999c23?format=webp&width=800"
               alt="Person using LockedIn app with mindful features"
-              className="w-full h-auto max-w-md"
+              className="h-96 w-auto"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F941257f2f48f49df86c49277a1e6f86e?format=webp&width=800"
+              alt="No mindless scrolling - stay focused"
+              className="h-96 w-auto"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F53284484e7df47038aa979c599496a5e?format=webp&width=800"
+              alt="App features - fixed scrolling, verified news, low dopamine mode"
+              className="h-96 w-auto"
             />
           </div>
         </div>
