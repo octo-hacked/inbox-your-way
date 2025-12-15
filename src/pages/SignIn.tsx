@@ -25,8 +25,10 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-border">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <div className="flex items-center justify-center flex-1 p-4">
+        <Card className="w-full max-w-md border-border">
         <CardHeader>
           <div className="flex items-center gap-2">
             <LockKeyhole className="w-5 h-5" />
@@ -51,6 +53,7 @@ export default function SignIn() {
           <p className="text-sm text-muted-foreground mt-4">Don't have an account? <Link to="/signup" className="text-accent hover:underline">Sign up</Link></p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
