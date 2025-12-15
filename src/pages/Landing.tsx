@@ -74,7 +74,7 @@ const Landing = () => {
       </section>
 
       {/* Features Grid - Be Mindful Section */}
-      <section className="bg-gray-100 py-5 md:py-24">
+      <section className="bg-gray-100 py-5 md:py-24 flex justify-between items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch min-h-96">
             {/* Features Poster - Left Side */}
