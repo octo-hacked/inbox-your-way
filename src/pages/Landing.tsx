@@ -76,37 +76,37 @@ const Landing = () => {
       {/* Features Grid - Be Mindful Section */}
       <section className="bg-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch min-h-96">
             {/* Features Grid - Left Side */}
-            <div className="bg-white rounded-lg p-8">
-              <div className="grid grid-cols-2 gap-8">
+            <div className="bg-white rounded-lg p-12 flex flex-col justify-center">
+              <div className="grid grid-cols-2 gap-12 mb-8">
                 {[
                   { Icon: Heart, title: "DIGITAL WELLNESS" },
                   { Icon: Brain, title: "FOCUS MODE" },
                   { Icon: Eye, title: "CONTENT FILTERING" },
                   { Icon: Newspaper, title: "VERIFIED NEWS" },
                 ].map((feature, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="flex justify-center mb-4">
-                      <feature.Icon className="w-12 h-12 text-gray-800 stroke-1" />
+                  <div key={idx} className="text-center py-4">
+                    <div className="flex justify-center mb-6">
+                      <feature.Icon className="w-14 h-14 text-gray-800 stroke-1" />
                     </div>
-                    <h3 className="font-bold text-xs text-gray-900 whitespace-nowrap">{feature.title}</h3>
+                    <h3 className="font-bold text-sm text-gray-900 whitespace-nowrap">{feature.title}</h3>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-center mt-12">
-                <div className="text-center">
-                  <Hourglass className="w-12 h-12 text-gray-800 stroke-1 mx-auto mb-4" />
-                  <h3 className="font-bold text-xs text-gray-900">FIXED SCROLLING</h3>
+              <div className="flex justify-center pt-8 border-t border-gray-200">
+                <div className="text-center py-4">
+                  <Hourglass className="w-14 h-14 text-gray-800 stroke-1 mx-auto mb-6" />
+                  <h3 className="font-bold text-sm text-gray-900">FIXED SCROLLING</h3>
                 </div>
               </div>
             </div>
 
             {/* Be Mindful - Right Side */}
-            <div className="flex flex-col justify-center pl-4">
-              <h2 className="text-4xl lg:text-5xl font-bold">
+            <div className="flex flex-col justify-center items-start pl-8">
+              <h2 className="text-5xl lg:text-6xl font-bold leading-tight">
                 Be
-                <span className="block text-red-600 text-5xl lg:text-6xl">Mindful!</span>
+                <span className="block text-red-600 text-6xl lg:text-7xl font-bold mt-2">Mindful!</span>
               </h2>
             </div>
           </div>
