@@ -73,10 +73,10 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* Features Grid - Be Mindful Section */}
       <section className="bg-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
             {/* Features Grid - Left Side */}
             <div className="lg:col-span-3 bg-white rounded-lg p-8">
               <div className="grid grid-cols-2 gap-12">
@@ -110,8 +110,12 @@ const Landing = () => {
               </h2>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Our App Helps Section */}
+      {/* Our App Helps Section */}
+      <section className="bg-gray-100 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-3xl md:text-4xl font-bold mb-4">
