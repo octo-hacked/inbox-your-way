@@ -23,8 +23,10 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-border">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <div className="flex items-center justify-center flex-1 p-4">
+        <Card className="w-full max-w-md border-border">
         <CardHeader>
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
@@ -57,6 +59,7 @@ export default function SignUp() {
           <p className="text-sm text-muted-foreground mt-4">Already have an account? <Link to="/signin" className="text-accent hover:underline">Sign in</Link></p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
