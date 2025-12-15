@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2, LockKeyhole } from "lucide-react";
 import axios from "axios";
+import { Navbar } from "@/components/Navbar";
 
 
 export default function SignIn() {
