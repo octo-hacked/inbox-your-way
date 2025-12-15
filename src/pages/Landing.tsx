@@ -129,7 +129,7 @@ const Landing = () => {
             <div className="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-200">
               <h4 className="font-bold text-center mb-6 text-gray-900 text-lg">Addictive vs Mindful</h4>
               <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Ff8c798f7606042bbaa40a2a8f75192a4?format=webp&width=800"
+                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fa5eb334962de49558cb21c2bd157349f?format=webp&width=800"
                 alt="Addictive vs Mindful comparison"
                 className="w-full h-auto"
               />
