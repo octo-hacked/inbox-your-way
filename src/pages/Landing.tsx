@@ -87,7 +87,7 @@ const Landing = () => {
             </div>
 
             {/* Be Mindful - Right Side */}
-            <div className="flex flex-col justify-center items-start">
+            <div className="flex flex-col justify-center items-end">
               <h2 className="text-5xl lg:text-6xl font-bold leading-tight">
                 Be
                 <span className="block text-red-600 text-6xl lg:text-7xl font-bold mt-2">Mindful!</span>
