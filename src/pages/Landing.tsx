@@ -114,11 +114,11 @@ const Landing = () => {
       </section>
 
       {/* Our App Helps Section */}
-      <section className="bg-gray-100 py-16 md:py-24">
+      <section className="bg-white border-t border-gray-200 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-4">
+              <h3 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
                 <span className="text-red-600">Our App</span> Helps you stay aware of your precious
                 <span className="block text-red-600">Time!</span>
               </h3>
@@ -126,7 +126,7 @@ const Landing = () => {
                 Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-8 shadow-sm">
+            <div className="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-200">
               <h4 className="font-bold text-center mb-6 text-gray-900 text-lg">Addictive vs Mindful</h4>
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Ff8c798f7606042bbaa40a2a8f75192a4?format=webp&width=800"
