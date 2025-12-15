@@ -76,10 +76,10 @@ const Landing = () => {
       {/* Features Grid - Be Mindful Section */}
       <section className="bg-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
             {/* Features Grid - Left Side */}
-            <div className="lg:col-span-3 bg-white rounded-lg p-8">
-              <div className="grid grid-cols-2 gap-12">
+            <div className="bg-white rounded-lg p-8">
+              <div className="grid grid-cols-2 gap-8">
                 {[
                   { Icon: Heart, title: "DIGITAL WELLNESS" },
                   { Icon: Brain, title: "FOCUS MODE" },
@@ -103,7 +103,7 @@ const Landing = () => {
             </div>
 
             {/* Be Mindful - Right Side */}
-            <div className="lg:col-span-2 flex flex-col justify-center items-end">
+            <div className="flex flex-col justify-center pl-4">
               <h2 className="text-4xl lg:text-5xl font-bold">
                 Be
                 <span className="block text-red-600 text-5xl lg:text-6xl">Mindful!</span>
@@ -116,8 +116,8 @@ const Landing = () => {
       {/* Our App Helps Section */}
       <section className="bg-white border-t border-gray-200 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+            <div className="pr-6">
               <h3 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
                 <span className="text-red-600">Our App</span> Helps you stay aware of your precious
                 <span className="block text-red-600">Time!</span>
@@ -126,11 +126,11 @@ const Landing = () => {
                 Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.
               </p>
             </div>
-            <div className="w-full shadow-sm flex items-center justify-center">
+            <div className="bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-200 flex items-center justify-center">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fa5eb334962de49558cb21c2bd157349f?format=webp&width=800"
                 alt="Addictive vs Mindful comparison"
-                className="w-full max-w-sm h-auto"
+                className="w-full max-w-md h-auto"
               />
             </div>
           </div>
