@@ -82,7 +82,7 @@ const Landing = () => {
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fda395d2f28334322a3962f7a0478796e?format=webp&width=800"
                 alt="Features: Digital Wellness, Focus Mode, Content Filtering, Verified News, Fixed Scrolling"
-                className="w-full h-auto max-w-md"
+                className="w-full h-auto"
               />
             </div>
 
