@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Heart, Brain, Eye, Newspaper, Hourglass } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 
 const Landing = () => {
   return (
