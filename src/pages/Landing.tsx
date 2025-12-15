@@ -18,14 +18,11 @@ const Landing = () => {
               <span className="block text-red-600">Straight Forward MEDIA</span>
             </h1>
             <div className="flex gap-4 mb-8 items-center">
-              <Link to="/signup">
-                <Button className="bg-black text-white hover:bg-gray-900 px-6 py-2 text-sm">
+              <Link to="/signin">
+                <Button className="bg-black text-white hover:bg-gray-900 px-8 py-3 text-base">
                   Get Started
                 </Button>
               </Link>
-              <span className="text-sm text-muted-foreground">get the app on :</span>
-              <a href="#" className="text-xs hover:underline">▶ PlayStore</a>
-              <a href="#" className="text-xs hover:underline">🍎 AppStore</a>
             </div>
           </div>
           <div className="hidden lg:flex gap-2 flex-shrink-0">
