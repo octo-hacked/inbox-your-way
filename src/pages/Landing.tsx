@@ -77,29 +77,13 @@ const Landing = () => {
       <section className="bg-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch min-h-96">
-            {/* Features Grid - Left Side */}
-            <div className="bg-white rounded-lg p-12 flex flex-col justify-center">
-              <div className="grid grid-cols-2 gap-12 mb-8">
-                {[
-                  { Icon: Heart, title: "DIGITAL WELLNESS" },
-                  { Icon: Brain, title: "FOCUS MODE" },
-                  { Icon: Eye, title: "CONTENT FILTERING" },
-                  { Icon: Newspaper, title: "VERIFIED NEWS" },
-                ].map((feature, idx) => (
-                  <div key={idx} className="text-center py-4">
-                    <div className="flex justify-center mb-6">
-                      <feature.Icon className="w-14 h-14 text-gray-800 stroke-1" />
-                    </div>
-                    <h3 className="font-bold text-sm text-gray-900 whitespace-nowrap">{feature.title}</h3>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-center pt-8 border-t border-gray-200">
-                <div className="text-center py-4">
-                  <Hourglass className="w-14 h-14 text-gray-800 stroke-1 mx-auto mb-6" />
-                  <h3 className="font-bold text-sm text-gray-900">FIXED SCROLLING</h3>
-                </div>
-              </div>
+            {/* Features Poster - Left Side */}
+            <div className="bg-white rounded-lg p-12 flex items-center justify-center">
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fda395d2f28334322a3962f7a0478796e?format=webp&width=800"
+                alt="Features: Digital Wellness, Focus Mode, Content Filtering, Verified News, Fixed Scrolling"
+                className="w-full h-auto max-w-md"
+              />
             </div>
 
             {/* Be Mindful - Right Side */}
