@@ -126,7 +126,7 @@ const Landing = () => {
                 Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.
               </p>
             </div>
-            <div className="shadow-sm flex items-center justify-center">
+            <div className="w-1/2 shadow-sm flex items-center justify-center">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fa5eb334962de49558cb21c2bd157349f?format=webp&width=800"
                 alt="Addictive vs Mindful comparison"
