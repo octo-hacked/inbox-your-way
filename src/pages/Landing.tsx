@@ -17,7 +17,7 @@ const Landing = () => {
               <span className="block text-foreground">STAY FOCUSED,</span>
               <span className="block text-red-600">Straight Forward MEDIA</span>
             </h1>
-            <div className="flex gap-4 mb-6 sm:mb-8 items-center justify-center lg:justify-start">
+            <div className="flex gap-4 mb-6 sm:mb-8 md:mb-0 items-center justify-center md:justify-start">
               <Link to="/signin">
                 <Button className="bg-black text-white hover:bg-gray-900 px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                   Get Started
