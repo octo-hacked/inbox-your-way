@@ -132,22 +132,22 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-background py-16 md:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">
+      <section className="bg-background py-8 sm:py-12 md:py-16 lg:py-24">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold mb-4 sm:mb-6 md:mb-8">
             Ready to Stay Focused?
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8">
             Join thousands who are reclaiming their time and attention.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link to="/signup">
-              <Button className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg">
+              <Button className="w-full sm:w-auto bg-red-600 hover:bg-red-700 px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base md:text-lg">
                 Create Account
               </Button>
             </Link>
             <Link to="/signin">
-              <Button variant="outline" className="px-8 py-6 text-lg">
+              <Button variant="outline" className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base md:text-lg">
                 Sign In
               </Button>
             </Link>
