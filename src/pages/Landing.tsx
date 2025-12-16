@@ -60,48 +60,48 @@ const Landing = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
             {/* Digital Wellness Card */}
-            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-100 group-hover:bg-red-600 transition-colors mb-4">
-                <Heart className="w-6 h-6 text-red-600 group-hover:text-white transition-colors" />
+            <div className="group bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm sm:shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-red-100 group-hover:bg-red-600 transition-colors mb-3 sm:mb-4">
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Digital Wellness</h3>
-              <p className="text-sm text-muted-foreground">Protect your mental health with mindful design</p>
+              <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">Digital Wellness</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Protect your mental health with mindful design</p>
             </div>
 
             {/* Focus Mode Card */}
-            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 group-hover:bg-blue-600 transition-colors mb-4">
-                <Brain className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors" />
+            <div className="group bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm sm:shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-blue-100 group-hover:bg-blue-600 transition-colors mb-3 sm:mb-4">
+                <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Focus Mode</h3>
-              <p className="text-sm text-muted-foreground">Eliminate distractions and concentrate better</p>
+              <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">Focus Mode</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Eliminate distractions and concentrate better</p>
             </div>
 
             {/* Content Filtering Card */}
-            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 group-hover:bg-purple-600 transition-colors mb-4">
-                <Eye className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors" />
+            <div className="group bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm sm:shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-purple-100 group-hover:bg-purple-600 transition-colors mb-3 sm:mb-4">
+                <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Content Filtering</h3>
-              <p className="text-sm text-muted-foreground">Smart curation of what matters to you</p>
+              <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">Content Filtering</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Smart curation of what matters to you</p>
             </div>
 
             {/* Verified News Card */}
-            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 group-hover:bg-green-600 transition-colors mb-4">
-                <Newspaper className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+            <div className="group bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm sm:shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-green-100 group-hover:bg-green-600 transition-colors mb-3 sm:mb-4">
+                <Newspaper className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Verified News</h3>
-              <p className="text-sm text-muted-foreground">Only trusted sources, no misinformation</p>
+              <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">Verified News</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Only trusted sources, no misinformation</p>
             </div>
 
             {/* Fixed Scrolling Card */}
-            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-100 group-hover:bg-amber-600 transition-colors mb-4">
-                <Hourglass className="w-6 h-6 text-amber-600 group-hover:text-white transition-colors" />
+            <div className="group bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm sm:shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-amber-100 group-hover:bg-amber-600 transition-colors mb-3 sm:mb-4">
+                <Hourglass className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Fixed Scrolling</h3>
-              <p className="text-sm text-muted-foreground">Control your time, not endless feeds</p>
+              <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">Fixed Scrolling</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Control your time, not endless feeds</p>
             </div>
           </div>
         </div>
