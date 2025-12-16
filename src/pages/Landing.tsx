@@ -9,7 +9,7 @@ const Landing = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 pb-5">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="flex flex-col lg:flex-row gap-16 items-start justify-between">
           <div className="flex-shrink-0 max-w-sm">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
@@ -46,7 +46,7 @@ const Landing = () => {
       </section>
 
       {/* Features Grid - Be Mindful Section */}
-      <section className="w-full bg-gradient-to-br from-gray-50 to-gray-100  md:py-24">
+      <section className="w-full bg-gradient-to-br from-gray-50 to-gray-100 py-12 md:py-16 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
