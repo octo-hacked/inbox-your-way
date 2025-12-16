@@ -46,19 +46,19 @@ const Landing = () => {
       </section>
 
       {/* Features Grid - Be Mindful Section */}
-      <section className="w-full bg-gradient-to-br from-gray-50 to-gray-100 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
+      <section className="w-full bg-gradient-to-br from-gray-50 to-gray-100 py-8 sm:py-12 md:py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-2 sm:mb-4">
               Be
-              <span className="block text-red-600 text-5xl md:text-6xl font-bold mt-2">Mindful!</span>
+              <span className="block text-red-600 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mt-1 sm:mt-2">Mindful!</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-6">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mt-4 sm:mt-6">
               Features designed to help you reclaim control of your digital life
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
             {/* Digital Wellness Card */}
             <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-100 group-hover:bg-red-600 transition-colors mb-4">
