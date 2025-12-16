@@ -9,7 +9,7 @@ const Landing = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto pt-10 pb-4 sm:px-6 lg:px-8 py-16 md:py-24 pb-5">
+      <section className="max-w-7xl mx-auto pt-10 sm:px-6 lg:px-8 py-16 md:py-24 pb-5">
         <div className="flex flex-col lg:flex-row gap-16 items-start justify-between">
           <div className="flex-shrink-0 max-w-sm">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
