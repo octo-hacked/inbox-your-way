@@ -108,23 +108,23 @@ const Landing = () => {
       </section>
 
       {/* Our App Helps Section */}
-      <section className="bg-white border-t border-gray-200 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-            <div className="pr-6">
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+      <section className="bg-white border-t border-gray-200 py-8 sm:py-12 md:py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
+            <div className="lg:pr-6">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold mb-4 sm:mb-6 leading-tight">
                 <span className="text-red-600">Our App</span> Helps you stay aware of your precious
                 <span className="block text-red-600">Time!</span>
               </h3>
-              <p className="text-muted-foreground text-base leading-relaxed">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
                 Our app keeps you mindful of your time with a finite feed, gentle reminders, and low-dopamine design — helping you connect meaningfully without endless scrolling or losing hours.
               </p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-200 flex items-center justify-center">
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200 flex items-center justify-center">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fa5eb334962de49558cb21c2bd157349f?format=webp&width=800"
                 alt="Addictive vs Mindful comparison"
-                className="w-full max-w-md h-auto"
+                className="w-full h-auto max-w-sm sm:max-w-md"
               />
             </div>
           </div>
