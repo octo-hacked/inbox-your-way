@@ -25,21 +25,16 @@ const Landing = () => {
               </Link>
             </div>
           </div>
-          <div className="hidden md:flex gap-2 flex-shrink-0 w-full lg:w-auto overflow-x-auto">
+          <div className="hidden md:flex gap-2 flex-shrink-0 w-full lg:w-auto">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F1e9ffb499d8f4bc1b493208a723d2d5d?format=webp&width=800"
               alt="LockedIn app interface mockup"
-              className="h-48 sm:h-56 md:h-64 lg:h-80 w-auto flex-shrink-0"
-            />
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F941257f2f48f49df86c49277a1e6f86e?format=webp&width=800"
-              alt="No mindless scrolling - stay focused"
-              className="h-48 sm:h-56 md:h-64 lg:h-80 w-auto flex-shrink-0"
+              className="h-40 md:h-56 lg:h-80 w-auto flex-shrink-0"
             />
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F53284484e7df47038aa979c599496a5e?format=webp&width=800"
               alt="App features - fixed scrolling, verified news, low dopamine mode"
-              className="h-48 sm:h-56 md:h-64 lg:h-80 w-auto flex-shrink-0"
+              className="h-40 md:h-56 lg:h-80 w-auto flex-shrink-0"
             />
           </div>
         </div>
