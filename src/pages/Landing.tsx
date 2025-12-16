@@ -9,37 +9,37 @@ const Landing = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-16 md:pb-5">
-        <div className="flex flex-col lg:flex-row gap-16 items-start justify-between">
-          <div className="flex-shrink-0 max-w-sm">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+      <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-12 lg:gap-16 items-start justify-between">
+          <div className="w-full lg:max-w-sm flex-shrink-0">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
               No Distractions,
               <span className="block text-foreground">STAY FOCUSED,</span>
               <span className="block text-red-600">Straight Forward MEDIA</span>
             </h1>
-            <div className="flex gap-4 mb-8 items-center">
+            <div className="flex gap-4 mb-6 sm:mb-8 items-center">
               <Link to="/signin">
-                <Button className="bg-black text-white hover:bg-gray-900 px-8 py-3 text-base">
+                <Button className="bg-black text-white hover:bg-gray-900 px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                   Get Started
                 </Button>
               </Link>
             </div>
           </div>
-          <div className="hidden lg:flex gap-2 flex-shrink-0">
+          <div className="hidden md:flex gap-2 flex-shrink-0 w-full lg:w-auto overflow-x-auto">
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F1e9ffb499d8f4bc1b493208a723d2d5d?format=webp&width=800"
               alt="LockedIn app interface mockup"
-              className="h-80 w-auto"
+              className="h-48 sm:h-56 md:h-64 lg:h-80 w-auto flex-shrink-0"
             />
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F941257f2f48f49df86c49277a1e6f86e?format=webp&width=800"
               alt="No mindless scrolling - stay focused"
-              className="h-80 w-auto"
+              className="h-48 sm:h-56 md:h-64 lg:h-80 w-auto flex-shrink-0"
             />
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2F53284484e7df47038aa979c599496a5e?format=webp&width=800"
               alt="App features - fixed scrolling, verified news, low dopamine mode"
-              className="h-80 w-auto"
+              className="h-48 sm:h-56 md:h-64 lg:h-80 w-auto flex-shrink-0"
             />
           </div>
         </div>
