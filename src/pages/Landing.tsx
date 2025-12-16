@@ -10,14 +10,14 @@ const Landing = () => {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20">
-        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-12 lg:gap-16 items-start justify-between">
-          <div className="w-full lg:max-w-sm flex-shrink-0">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-12 lg:gap-16 lg:items-start lg:justify-between items-center justify-center">
+          <div className="w-full lg:max-w-sm flex-shrink-0 text-center lg:text-left">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
               No Distractions,
               <span className="block text-foreground">STAY FOCUSED,</span>
               <span className="block text-red-600">Straight Forward MEDIA</span>
             </h1>
-            <div className="flex gap-4 mb-6 sm:mb-8 items-center">
+            <div className="flex gap-4 mb-6 sm:mb-8 items-center justify-center lg:justify-start">
               <Link to="/signin">
                 <Button className="bg-black text-white hover:bg-gray-900 px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                   Get Started
