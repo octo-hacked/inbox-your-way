@@ -156,9 +156,9 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p>&copy; 2024 LockedIn. All rights reserved.</p>
+      <footer className="bg-gray-900 text-gray-400 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs sm:text-sm">&copy; 2024 LockedIn. All rights reserved.</p>
         </div>
       </footer>
     </div>
