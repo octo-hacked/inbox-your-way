@@ -46,24 +46,62 @@ const Landing = () => {
       </section>
 
       {/* Features Grid - Be Mindful Section */}
-      <section className="w-full bg-gray-100  md:py-24 flex justify-between items-center">
+      <section className="w-full bg-gradient-to-br from-gray-50 to-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch min-h-96">
-            {/* Features Poster - Left Side */}
-            <div className="bg-white rounded-lg  flex items-center justify-center">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Fda5f8811416846e891b7362c61b366cb%2Fda395d2f28334322a3962f7a0478796e?format=webp&width=800"
-                alt="Features: Digital Wellness, Focus Mode, Content Filtering, Verified News, Fixed Scrolling"
-                className="w-full h-auto"
-              />
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
+              Be
+              <span className="block text-red-600 text-5xl md:text-6xl font-bold mt-2">Mindful!</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-6">
+              Features designed to help you reclaim control of your digital life
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {/* Digital Wellness Card */}
+            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-100 group-hover:bg-red-600 transition-colors mb-4">
+                <Heart className="w-6 h-6 text-red-600 group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Digital Wellness</h3>
+              <p className="text-sm text-muted-foreground">Protect your mental health with mindful design</p>
             </div>
 
-            {/* Be Mindful - Right Side */}
-            <div className="flex flex-col justify-center items-end">
-              <h2 className="text-5xl lg:text-6xl font-bold leading-tight">
-                Be
-                <span className="block text-red-600 text-6xl lg:text-7xl font-bold mt-2">Mindful!</span>
-              </h2>
+            {/* Focus Mode Card */}
+            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 group-hover:bg-blue-600 transition-colors mb-4">
+                <Brain className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Focus Mode</h3>
+              <p className="text-sm text-muted-foreground">Eliminate distractions and concentrate better</p>
+            </div>
+
+            {/* Content Filtering Card */}
+            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 group-hover:bg-purple-600 transition-colors mb-4">
+                <Eye className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Content Filtering</h3>
+              <p className="text-sm text-muted-foreground">Smart curation of what matters to you</p>
+            </div>
+
+            {/* Verified News Card */}
+            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 group-hover:bg-green-600 transition-colors mb-4">
+                <Newspaper className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Verified News</h3>
+              <p className="text-sm text-muted-foreground">Only trusted sources, no misinformation</p>
+            </div>
+
+            {/* Fixed Scrolling Card */}
+            <div className="group bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-100 group-hover:bg-amber-600 transition-colors mb-4">
+                <Hourglass className="w-6 h-6 text-amber-600 group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Fixed Scrolling</h3>
+              <p className="text-sm text-muted-foreground">Control your time, not endless feeds</p>
             </div>
           </div>
         </div>
