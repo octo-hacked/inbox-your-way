@@ -571,7 +571,7 @@ const Messages = () => {
 
             {/* Messages */}
             <ScrollArea className="flex-1 main-feed-scroll">
-              <div className="p-4 space-y-4 pb-20 md:pb-4">
+              <div className="p-4 space-y-4 pb-32 md:pb-4">
                 {currentMessages.length === 0 ? (
                   <div className="flex items-center justify-center h-32 text-muted-foreground">
                     <p>No messages yet. Start the conversation!</p>
