@@ -523,7 +523,7 @@ const Messages = () => {
       )}
 
       {/* Chat Area */}
-      <div className={`flex-1 flex flex-col ${isMobile && currentChat === null ? 'hidden' : ''}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden ${isMobile && currentChat === null ? 'hidden' : ''}`}>
         {currentChat ? (
           <>
             {/* Chat Header */}
