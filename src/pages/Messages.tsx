@@ -523,7 +523,7 @@ const Messages = () => {
       )}
 
       {/* Chat Area */}
-      <div className={`flex-1 flex flex-col ${isMobile && currentChat === null ? 'hidden' : ''}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden ${isMobile && currentChat === null ? 'hidden' : ''}`}>
         {currentChat ? (
           <>
             {/* Chat Header */}
@@ -571,7 +571,7 @@ const Messages = () => {
 
             {/* Messages */}
             <ScrollArea className="flex-1 main-feed-scroll">
-              <div className="p-4 space-y-4 pb-20 md:pb-4">
+              <div className="p-4 space-y-4 pb-32 md:pb-4">
                 {currentMessages.length === 0 ? (
                   <div className="flex items-center justify-center h-32 text-muted-foreground">
                     <p>No messages yet. Start the conversation!</p>
@@ -627,7 +627,7 @@ const Messages = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-3 md:p-4 border-t border-border bg-card">
+            <div className="p-3 md:p-4 border-t border-border bg-card sticky bottom-0 z-10">
               <div className="flex items-center gap-2 md:gap-3">
                 <button className="p-2 hover:bg-hover-bg rounded transition-colors">
                   <Paperclip className="w-5 h-5 text-icon-color" />

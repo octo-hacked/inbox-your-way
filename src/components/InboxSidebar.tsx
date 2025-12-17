@@ -1,13 +1,19 @@
-import { Send, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Send, ArrowLeft, Phone, Video, Smile, Paperclip, Plus } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { formatDistanceToNow } from "date-fns";
 import { formatDateTime, formatDateRelative } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { API_BASE } from "@/lib/config";
 import type { FeedPost } from "@/components/MainFeed";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
@@ -26,11 +32,22 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   const { toast } = useToast();
   const { user, accessToken } = useAuth();
 
+  // Create Chat dialog state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createTab, setCreateTab] = useState("direct");
+  const [directUserId, setDirectUserId] = useState("");
+  const [groupName, setGroupName] = useState("");
+  const [groupParticipants, setGroupParticipants] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   const [commentsList, setCommentsList] = useState<any[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
 
-  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, initializeSocket, loading: chatsLoading } = useChat();
+  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, initializeSocket, loading: chatsLoading, createDirectChat, createGroupChat } = useChat();
 
   useEffect(() => {
     if (accessToken && user) {
@@ -38,6 +55,128 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
       fetchChats().catch((e) => console.error('fetchChats failed', e));
     }
   }, [accessToken, user, fetchChats, initializeSocket]);
+
+  // API helper functions for search and create chat
+  const searchUsers = async (query: string, page = 1) => {
+    try {
+      const response = await fetch(`${API_BASE}/users/search?q=${encodeURIComponent(query)}&page=${page}&limit=20`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return { users: data.data.users as any[], pagination: data.data.pagination };
+      }
+      throw new Error(data.message || 'Search failed');
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw error;
+    }
+  };
+
+  const getUserSuggestions = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/users/suggestions?limit=10`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return data.data as any[];
+      }
+      throw new Error(data.message || 'Suggestion fetch failed');
+    } catch (error) {
+      console.error('Error getting user suggestions:', error);
+      throw error;
+    }
+  };
+
+  const createChatWithUser = async (userId: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/chats/direct/${userId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return data.data;
+      }
+      throw new Error(data.message || 'Failed to create chat');
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      throw error;
+    }
+  };
+
+  function debounce<T extends (...args: any[]) => void>(fn: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    return function(this: any, ...args: Parameters<T>) {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        timeout = null;
+        fn.apply(this, args);
+      }, wait);
+    } as T;
+  }
+
+  const debouncedSearch = useRef(
+    debounce(async (query: string) => {
+      const trimmed = query.trim();
+      if (!trimmed) {
+        setSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      try {
+        const { users } = await searchUsers(trimmed);
+        setSearchResults(users);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300)
+  ).current;
+
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+  }, [searchQuery, debouncedSearch]);
+
+  useEffect(() => {
+    if (isCreateOpen) {
+      getUserSuggestions()
+        .then(setSuggestions)
+        .catch(() => setSuggestions([]));
+    }
+  }, [isCreateOpen]);
+
+  const handleUserSelect = async (u: any) => {
+    try {
+      const chat = await createChatWithUser(u._id);
+      await fetchChats();
+      if (chat) {
+        const chatObj = chats.find(ch => ch._id === chat._id) || chat;
+        setActiveChat(chatObj);
+        setIsCreateOpen(false);
+        setSearchQuery('');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Failed to create chat:', error);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -496,11 +635,11 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className={`text-sm ${conversation.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <h3 className={`text-sm truncate ${conversation.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
                     {conversation.name}
                   </h3>
-                  <span className="text-xs text-muted-foreground">{conversation.time}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{conversation.time}</span>
                 </div>
                 <p className={`text-sm truncate ${conversation.unread ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {conversation.lastMessage}
@@ -513,10 +652,99 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
       {/* Compose Button */}
       <div className="p-4 border-t border-border">
-        <button className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4 text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-          <Send className="w-4 h-4" />
-          New Message
-        </button>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <button className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4 text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+              <Send className="w-4 h-4" />
+              New Message
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>New Chat</DialogTitle>
+              <DialogDescription>Create a direct message or a group chat.</DialogDescription>
+            </DialogHeader>
+            <Tabs value={createTab} onValueChange={setCreateTab}>
+              <TabsList className="mb-4">
+                <TabsTrigger value="direct">Direct</TabsTrigger>
+                <TabsTrigger value="group">Group</TabsTrigger>
+              </TabsList>
+              <TabsContent value="direct">
+                <div className="grid gap-3">
+                  <Label htmlFor="userSearch">Search users</Label>
+                  <Input
+                    id="userSearch"
+                    placeholder="Type a name or @username"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchLoading && (
+                    <div className="text-sm text-muted-foreground">Searching...</div>
+                  )}
+                  {searchQuery.trim() ? (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-foreground">Search Results</h3>
+                      <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                        {searchResults.map((u) => (
+                          <button
+                            key={u._id}
+                            onClick={() => handleUserSelect(u)}
+                            className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                          >
+                            <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                            <div>
+                              <div className="text-sm text-foreground">{u.fullname}</div>
+                              <div className="text-xs text-muted-foreground">@{u.username}</div>
+                            </div>
+                          </button>
+                        ))}
+                        {searchResults.length === 0 && !searchLoading && (
+                          <div className="text-sm text-muted-foreground">No users found.</div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-foreground">Suggestions</h3>
+                      <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                        {suggestions.map((u) => (
+                          <button
+                            key={u._id}
+                            onClick={() => handleUserSelect(u)}
+                            className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                          >
+                            <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                            <div>
+                              <div className="text-sm text-foreground">{u.fullname}</div>
+                              <div className="text-xs text-muted-foreground">@{u.username}</div>
+                            </div>
+                          </button>
+                        ))}
+                        {suggestions.length === 0 && (
+                          <div className="text-sm text-muted-foreground">No suggestions available.</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-end gap-2 mt-2">
+                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Close</Button>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="group">
+                <div className="grid gap-2">
+                  <Label htmlFor="groupName">Group name</Label>
+                  <Input id="groupName" placeholder="e.g., Weekend Plans" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
+                  <Label htmlFor="participants">Participants (comma-separated IDs)</Label>
+                  <Input id="participants" placeholder="id1, id2, id3" value={groupParticipants} onChange={(e) => setGroupParticipants(e.target.value)} />
+                  <div className="flex justify-end gap-2 mt-2">
+                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
