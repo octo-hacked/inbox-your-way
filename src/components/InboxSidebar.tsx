@@ -1,13 +1,19 @@
-import { Send, ArrowLeft, Phone, Video, Smile, Paperclip } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Send, ArrowLeft, Phone, Video, Smile, Paperclip, Plus } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { formatDistanceToNow } from "date-fns";
 import { formatDateTime, formatDateRelative } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { API_BASE } from "@/lib/config";
 import type { FeedPost } from "@/components/MainFeed";
 
 const avatarFor = (seed: string) => `https://i.pravatar.cc/100?u=${encodeURIComponent(seed)}`;
