@@ -627,7 +627,7 @@ const Messages = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-3 md:p-4 border-t border-border bg-card">
+            <div className="p-3 md:p-4 border-t border-border bg-card sticky bottom-0 z-10">
               <div className="flex items-center gap-2 md:gap-3">
                 <button className="p-2 hover:bg-hover-bg rounded transition-colors">
                   <Paperclip className="w-5 h-5 text-icon-color" />
