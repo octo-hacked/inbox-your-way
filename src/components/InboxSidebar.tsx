@@ -635,11 +635,11 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className={`text-sm ${conversation.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <h3 className={`text-sm truncate ${conversation.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
                     {conversation.name}
                   </h3>
-                  <span className="text-xs text-muted-foreground">{conversation.time}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{conversation.time}</span>
                 </div>
                 <p className={`text-sm truncate ${conversation.unread ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {conversation.lastMessage}
