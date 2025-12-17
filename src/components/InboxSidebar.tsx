@@ -652,10 +652,99 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
 
       {/* Compose Button */}
       <div className="p-4 border-t border-border">
-        <button className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4 text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-          <Send className="w-4 h-4" />
-          New Message
-        </button>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <button className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4 text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+              <Send className="w-4 h-4" />
+              New Message
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>New Chat</DialogTitle>
+              <DialogDescription>Create a direct message or a group chat.</DialogDescription>
+            </DialogHeader>
+            <Tabs value={createTab} onValueChange={setCreateTab}>
+              <TabsList className="mb-4">
+                <TabsTrigger value="direct">Direct</TabsTrigger>
+                <TabsTrigger value="group">Group</TabsTrigger>
+              </TabsList>
+              <TabsContent value="direct">
+                <div className="grid gap-3">
+                  <Label htmlFor="userSearch">Search users</Label>
+                  <Input
+                    id="userSearch"
+                    placeholder="Type a name or @username"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchLoading && (
+                    <div className="text-sm text-muted-foreground">Searching...</div>
+                  )}
+                  {searchQuery.trim() ? (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-foreground">Search Results</h3>
+                      <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                        {searchResults.map((u) => (
+                          <button
+                            key={u._id}
+                            onClick={() => handleUserSelect(u)}
+                            className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                          >
+                            <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                            <div>
+                              <div className="text-sm text-foreground">{u.fullname}</div>
+                              <div className="text-xs text-muted-foreground">@{u.username}</div>
+                            </div>
+                          </button>
+                        ))}
+                        {searchResults.length === 0 && !searchLoading && (
+                          <div className="text-sm text-muted-foreground">No users found.</div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-foreground">Suggestions</h3>
+                      <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                        {suggestions.map((u) => (
+                          <button
+                            key={u._id}
+                            onClick={() => handleUserSelect(u)}
+                            className="w-full flex items-center gap-3 p-2 rounded hover:bg-hover-bg text-left"
+                          >
+                            <img src={u.avatar} alt={u.username} className="w-10 h-10 rounded-full object-cover" />
+                            <div>
+                              <div className="text-sm text-foreground">{u.fullname}</div>
+                              <div className="text-xs text-muted-foreground">@{u.username}</div>
+                            </div>
+                          </button>
+                        ))}
+                        {suggestions.length === 0 && (
+                          <div className="text-sm text-muted-foreground">No suggestions available.</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-end gap-2 mt-2">
+                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Close</Button>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="group">
+                <div className="grid gap-2">
+                  <Label htmlFor="groupName">Group name</Label>
+                  <Input id="groupName" placeholder="e.g., Weekend Plans" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
+                  <Label htmlFor="participants">Participants (comma-separated IDs)</Label>
+                  <Input id="participants" placeholder="id1, id2, id3" value={groupParticipants} onChange={(e) => setGroupParticipants(e.target.value)} />
+                  <div className="flex justify-end gap-2 mt-2">
+                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
