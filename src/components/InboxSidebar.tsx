@@ -32,6 +32,17 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   const { toast } = useToast();
   const { user, accessToken } = useAuth();
 
+  // Create Chat dialog state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createTab, setCreateTab] = useState("direct");
+  const [directUserId, setDirectUserId] = useState("");
+  const [groupName, setGroupName] = useState("");
+  const [groupParticipants, setGroupParticipants] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   const [commentsList, setCommentsList] = useState<any[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
