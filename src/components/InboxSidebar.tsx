@@ -47,7 +47,7 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
 
-  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, initializeSocket, loading: chatsLoading } = useChat();
+  const { chats, messages, fetchChats, fetchMessages, sendMessage, setActiveChat, onlineUsers, initializeSocket, loading: chatsLoading, createDirectChat, createGroupChat } = useChat();
 
   useEffect(() => {
     if (accessToken && user) {
@@ -55,6 +55,128 @@ const InboxSidebar = ({ postPreview, onBackFromPost, postToShare, onBackFromShar
       fetchChats().catch((e) => console.error('fetchChats failed', e));
     }
   }, [accessToken, user, fetchChats, initializeSocket]);
+
+  // API helper functions for search and create chat
+  const searchUsers = async (query: string, page = 1) => {
+    try {
+      const response = await fetch(`${API_BASE}/users/search?q=${encodeURIComponent(query)}&page=${page}&limit=20`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return { users: data.data.users as any[], pagination: data.data.pagination };
+      }
+      throw new Error(data.message || 'Search failed');
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw error;
+    }
+  };
+
+  const getUserSuggestions = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/users/suggestions?limit=10`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return data.data as any[];
+      }
+      throw new Error(data.message || 'Suggestion fetch failed');
+    } catch (error) {
+      console.error('Error getting user suggestions:', error);
+      throw error;
+    }
+  };
+
+  const createChatWithUser = async (userId: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/chats/direct/${userId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        return data.data;
+      }
+      throw new Error(data.message || 'Failed to create chat');
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      throw error;
+    }
+  };
+
+  function debounce<T extends (...args: any[]) => void>(fn: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    return function(this: any, ...args: Parameters<T>) {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        timeout = null;
+        fn.apply(this, args);
+      }, wait);
+    } as T;
+  }
+
+  const debouncedSearch = useRef(
+    debounce(async (query: string) => {
+      const trimmed = query.trim();
+      if (!trimmed) {
+        setSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      try {
+        const { users } = await searchUsers(trimmed);
+        setSearchResults(users);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300)
+  ).current;
+
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+  }, [searchQuery, debouncedSearch]);
+
+  useEffect(() => {
+    if (isCreateOpen) {
+      getUserSuggestions()
+        .then(setSuggestions)
+        .catch(() => setSuggestions([]));
+    }
+  }, [isCreateOpen]);
+
+  const handleUserSelect = async (u: any) => {
+    try {
+      const chat = await createChatWithUser(u._id);
+      await fetchChats();
+      if (chat) {
+        const chatObj = chats.find(ch => ch._id === chat._id) || chat;
+        setActiveChat(chatObj);
+        setIsCreateOpen(false);
+        setSearchQuery('');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Failed to create chat:', error);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
